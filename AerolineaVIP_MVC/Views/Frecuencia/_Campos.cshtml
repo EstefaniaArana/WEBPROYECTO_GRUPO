@@ -1,0 +1,39 @@
+﻿
+@model AerolineaVIP_MVC.Models.Frecuencia
+
+<div class="form-group">
+    <label class="control-label col-md-2">Ruta</label>
+    <div class="col-md-4">
+        @Html.DropDownListFor(m => m.RutaId, (SelectList)ViewBag.Ruta, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.RutaId, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Día</label>
+    <div class="col-md-4">
+        @Html.DropDownListFor(m => m.DiaSemana, (SelectList)ViewBag.DiaLista, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.DiaSemana, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Hora de salida</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.HoraSalida, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+        @Html.ValidationMessageFor(m => m.HoraSalida, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Hora de llegada</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.HoraLlegada, "{0:hh\\:mm}", new { @class = "form-control", type = "time" })
+        @Html.ValidationMessageFor(m => m.HoraLlegada, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Activa</label>
+    <div class="col-md-4">@Html.CheckBoxFor(m => m.Activa)</div>
+</div>

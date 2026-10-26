@@ -1,0 +1,54 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Frecuencia>
+@{
+    ViewBag.Title = "Frecuencias";
+    var rutas = (Dictionary<int, string>)ViewBag.Rutas;
+    var dias = (string[])ViewBag.NombresDias;
+}
+
+<h2>Frecuencias</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nueva", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTRO: lista desplegable de día *@
+@using (Html.BeginForm("Index", "Frecuencia", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <label>Día:</label>
+    @Html.DropDownList("dia", (SelectList)ViewBag.FiltroDias, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Ruta</th>
+        <th>Día</th>
+        <th>Salida</th>
+        <th>Llegada</th>
+        <th>Activa</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@(rutas.ContainsKey(item.RutaId) ? rutas[item.RutaId] : "")</td>
+            <td>@dias[item.DiaSemana]</td>
+            <td>@item.HoraSalida.ToString(@"hh\:mm")</td>
+            <td>@item.HoraLlegada.ToString(@"hh\:mm")</td>
+            <td>@(item.Activa ? "Sí" : "No")</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.FrecuenciaId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.FrecuenciaId })
+                }
+            </td>
+        </tr>
+    }
+</table>

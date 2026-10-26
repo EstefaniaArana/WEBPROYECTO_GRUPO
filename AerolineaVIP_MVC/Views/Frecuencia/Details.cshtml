@@ -1,0 +1,58 @@
+﻿@model AerolineaVIP_MVC.Models.Frecuencia
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Frecuencia</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DiaSemana)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DiaSemana)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.HoraSalida)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.HoraSalida)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.HoraLlegada)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.HoraLlegada)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Activa)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Activa)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ruta.RutaId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Ruta.RutaId)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.FrecuenciaId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

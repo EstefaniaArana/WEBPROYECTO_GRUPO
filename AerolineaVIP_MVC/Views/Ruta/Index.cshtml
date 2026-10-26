@@ -1,0 +1,51 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Ruta>
+@{
+    ViewBag.Title = "Rutas";
+    var nombres = (Dictionary<int, string>)ViewBag.Nombres;
+}
+
+<h2>Rutas</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nueva", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTRO: lista desplegable de origen *@
+@using (Html.BeginForm("Index", "Ruta", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <label>Origen:</label>
+    @Html.DropDownList("origenId", (SelectList)ViewBag.Origenes, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Origen</th>
+        <th>Destino</th>
+        <th>Tarifa (USD)</th>
+        <th>Activa</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@(nombres.ContainsKey(item.AeropuertoOrigenId) ? nombres[item.AeropuertoOrigenId] : "")</td>
+            <td>@(nombres.ContainsKey(item.AeropuertoDestinoId) ? nombres[item.AeropuertoDestinoId] : "")</td>
+            <td>@item.TarifaReferencial.ToString("N2")</td>
+            <td>@(item.Activa ? "Sí" : "No")</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.RutaId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.RutaId })
+                }
+            </td>
+        </tr>
+    }
+</table>

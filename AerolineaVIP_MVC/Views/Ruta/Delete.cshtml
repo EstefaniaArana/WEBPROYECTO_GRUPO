@@ -1,0 +1,23 @@
+﻿@model AerolineaVIP_MVC.Models.Ruta
+@{
+    ViewBag.Title = "Eliminar ruta";
+}
+
+<h2>Eliminar ruta</h2>
+<h4>¿Seguro que desea eliminar esta ruta?</h4>
+
+<dl class="dl-horizontal">
+    <dt>Origen</dt>
+    <dd>@ViewBag.Origen</dd>
+    <dt>Destino</dt>
+    <dd>@ViewBag.Destino</dd>
+    <dt>Tarifa (USD)</dt>
+    <dd>@Model.TarifaReferencial.ToString("N2")</dd>
+</dl>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="submit" value="Eliminar" class="btn btn-danger" />
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-default" })
+}

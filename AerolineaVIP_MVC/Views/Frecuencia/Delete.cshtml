@@ -1,0 +1,25 @@
+﻿@model AerolineaVIP_MVC.Models.Frecuencia
+@{
+    ViewBag.Title = "Eliminar frecuencia";
+}
+
+<h2>Eliminar frecuencia</h2>
+<h4>¿Seguro que desea eliminar esta frecuencia?</h4>
+
+<dl class="dl-horizontal">
+    <dt>Ruta</dt>
+    <dd>@ViewBag.Ruta</dd>
+    <dt>Día</dt>
+    <dd>@ViewBag.Dia</dd>
+    <dt>Salida</dt>
+    <dd>@Model.HoraSalida.ToString(@"hh\:mm")</dd>
+    <dt>Llegada</dt>
+    <dd>@Model.HoraLlegada.ToString(@"hh\:mm")</dd>
+</dl>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="submit" value="Eliminar" class="btn btn-danger" />
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-default" })
+}

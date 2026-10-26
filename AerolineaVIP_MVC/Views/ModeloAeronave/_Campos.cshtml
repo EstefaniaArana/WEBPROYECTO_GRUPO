@@ -1,0 +1,25 @@
+﻿@model AerolineaVIP_MVC.Models.ModeloAeronave
+
+<div class="form-group">
+    <label class="control-label col-md-2">Fabricante</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Fabricante, new { @class = "form-control", maxlength = 60 })
+        @Html.ValidationMessageFor(m => m.Fabricante, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Nombre</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", maxlength = 60 })
+        @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Capacidad (1 a 7)</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.CapacidadAsientos, new { @class = "form-control", type = "number", min = 1, max = 7 })
+        @Html.ValidationMessageFor(m => m.CapacidadAsientos, "", new { @class = "text-danger" })
+    </div>
+</div>

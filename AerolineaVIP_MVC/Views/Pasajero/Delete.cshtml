@@ -1,0 +1,23 @@
+﻿@model AerolineaVIP_MVC.Models.Pasajero
+@{
+    ViewBag.Title = "Eliminar pasajero";
+}
+
+<h2>Eliminar pasajero</h2>
+<h4>¿Seguro que desea eliminar este pasajero?</h4>
+
+<dl class="dl-horizontal">
+    <dt>Documento</dt>
+    <dd>@Model.TipoDocumentoCodigo @Model.NumeroDocumento</dd>
+    <dt>Pasajero</dt>
+    <dd>@Model.Apellidos @Model.Nombres</dd>
+    <dt>Correo</dt>
+    <dd>@Model.Correo</dd>
+</dl>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="submit" value="Eliminar" class="btn btn-danger" />
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-default" })
+}

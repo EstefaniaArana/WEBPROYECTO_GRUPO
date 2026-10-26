@@ -1,0 +1,52 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Pasajero>
+@{
+    ViewBag.Title = "Pasajeros";
+}
+
+<h2>Pasajeros</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nuevo", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTROS: texto y tipo de documento *@
+@using (Html.BeginForm("Index", "Pasajero", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <input type="text" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Nombre o documento" />
+    @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "-- Todos los documentos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Documento</th>
+        <th>Pasajero</th>
+        <th>Nacimiento</th>
+        <th>Correo</th>
+        <th>Teléfono</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.TipoDocumentoCodigo @item.NumeroDocumento</td>
+            <td>@item.Apellidos @item.Nombres</td>
+            <td>@(item.FechaNacimiento != null ? item.FechaNacimiento.Value.ToString("dd/MM/yyyy") : "")</td>
+            <td>@item.Correo</td>
+            <td>@item.Telefono</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.PasajeroId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.PasajeroId })
+                }
+            </td>
+        </tr>
+    }
+</table>

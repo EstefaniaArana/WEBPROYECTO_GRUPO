@@ -1,0 +1,54 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Vuelo>
+@{
+    ViewBag.Title = "Vuelos";
+    var frecuencias = (Dictionary<int, string>)ViewBag.Frecuencias;
+    var aeronaves = (Dictionary<int, string>)ViewBag.Aeronaves;
+}
+
+<h2>Vuelos</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nuevo", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTROS: fecha (calendario) y estado (lista desplegable) *@
+@using (Html.BeginForm("Index", "Vuelo", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <label>Fecha:</label>
+    <input type="date" name="fecha" value="@ViewBag.Fecha" class="form-control" />
+    <label>Estado:</label>
+    @Html.DropDownList("estado", (SelectList)ViewBag.Estados, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Fecha</th>
+        <th>Ruta y horario</th>
+        <th>Aeronave</th>
+        <th>Estado</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.FechaOperacion.ToString("dd/MM/yyyy")</td>
+            <td>@(frecuencias.ContainsKey(item.FrecuenciaId) ? frecuencias[item.FrecuenciaId] : "")</td>
+            <td>@(item.AeronaveId != null && aeronaves.ContainsKey(item.AeronaveId.Value) ? aeronaves[item.AeronaveId.Value] : "Sin asignar")</td>
+            <td>@item.EstadoVueloCodigo</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.VueloId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.VueloId })
+                }
+            </td>
+        </tr>
+    }
+</table>

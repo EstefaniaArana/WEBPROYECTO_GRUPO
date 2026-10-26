@@ -1,0 +1,49 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Aeronave>
+@{
+    ViewBag.Title = "Aeronaves";
+    var modelos = (Dictionary<int, string>)ViewBag.Modelos;
+}
+
+<h2>Aeronaves</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nueva", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTRO: lista desplegable de estado *@
+@using (Html.BeginForm("Index", "Aeronave", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <label>Estado:</label>
+    @Html.DropDownList("estado", (SelectList)ViewBag.Estados, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Matrícula</th>
+        <th>Modelo</th>
+        <th>Estado</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Matricula</td>
+            <td>@(modelos.ContainsKey(item.ModeloAeronaveId) ? modelos[item.ModeloAeronaveId] : "")</td>
+            <td>@item.EstadoAeronaveCodigo</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.AeronaveId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.AeronaveId })
+                }
+            </td>
+        </tr>
+    }
+</table>

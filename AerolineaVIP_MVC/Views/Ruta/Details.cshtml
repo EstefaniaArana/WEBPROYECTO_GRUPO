@@ -1,0 +1,50 @@
+﻿@model AerolineaVIP_MVC.Models.Ruta
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Ruta</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.TarifaReferencial)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TarifaReferencial)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Activa)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Activa)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Aeropuerto.CodigoIATA)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Aeropuerto.CodigoIATA)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Aeropuerto1.CodigoIATA)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Aeropuerto1.CodigoIATA)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.RutaId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

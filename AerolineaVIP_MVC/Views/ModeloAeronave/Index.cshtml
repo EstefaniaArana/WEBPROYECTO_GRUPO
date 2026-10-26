@@ -1,0 +1,47 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.ModeloAeronave>
+@{
+    ViewBag.Title = "Modelos de aeronave";
+}
+
+<h2>Modelos de aeronave</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nuevo", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTRO por texto *@
+@using (Html.BeginForm("Index", "ModeloAeronave", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <input type="text" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Fabricante o nombre" />
+    <input type="submit" value="Buscar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Fabricante</th>
+        <th>Nombre</th>
+        <th>Capacidad</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Fabricante</td>
+            <td>@item.Nombre</td>
+            <td>@item.CapacidadAsientos</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.ModeloAeronaveId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.ModeloAeronaveId })
+                }
+            </td>
+        </tr>
+    }
+</table>

@@ -1,0 +1,52 @@
+﻿@model AerolineaVIP_MVC.Models.Ruta
+@{
+    ViewBag.Title = "Crear ruta";
+}
+
+<h2>Crear ruta</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="control-label col-md-2">Origen</label>
+            <div class="col-md-4">
+                @Html.DropDownListFor(m => m.AeropuertoOrigenId, (SelectList)ViewBag.Origen, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.AeropuertoOrigenId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Destino</label>
+            <div class="col-md-4">
+                @Html.DropDownListFor(m => m.AeropuertoDestinoId, (SelectList)ViewBag.Destino, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.AeropuertoDestinoId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Tarifa (USD)</label>
+            <div class="col-md-4">
+                @Html.TextBoxFor(m => m.TarifaReferencial, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.TarifaReferencial, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Activa</label>
+            <div class="col-md-4">@Html.CheckBoxFor(m => m.Activa)</div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Guardar" class="btn btn-primary" />
+                @Html.ActionLink("Volver", "Index", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts { @Scripts.Render("~/bundles/jqueryval") }

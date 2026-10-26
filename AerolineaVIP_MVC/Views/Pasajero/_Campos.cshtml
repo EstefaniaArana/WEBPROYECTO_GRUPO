@@ -1,0 +1,57 @@
+﻿@model AerolineaVIP_MVC.Models.Pasajero
+
+<div class="form-group">
+    <label class="control-label col-md-2">Tipo de documento</label>
+    <div class="col-md-4">
+        @Html.DropDownListFor(m => m.TipoDocumentoCodigo, (SelectList)ViewBag.ListaTipos, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.TipoDocumentoCodigo, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Número de documento</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.NumeroDocumento, new { @class = "form-control", maxlength = 20 })
+        @Html.ValidationMessageFor(m => m.NumeroDocumento, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Nombres</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Nombres, new { @class = "form-control", maxlength = 100 })
+        @Html.ValidationMessageFor(m => m.Nombres, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Apellidos</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Apellidos, new { @class = "form-control", maxlength = 100 })
+        @Html.ValidationMessageFor(m => m.Apellidos, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Fecha de nacimiento</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.FechaNacimiento, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.FechaNacimiento, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Correo</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Correo, new { @class = "form-control", maxlength = 256, type = "email" })
+        @Html.ValidationMessageFor(m => m.Correo, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Teléfono</label>
+    <div class="col-md-4">
+        @Html.TextBoxFor(m => m.Telefono, new { @class = "form-control", maxlength = 20 })
+        @Html.ValidationMessageFor(m => m.Telefono, "", new { @class = "text-danger" })
+    </div>
+</div>

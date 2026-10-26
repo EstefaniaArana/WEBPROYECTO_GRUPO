@@ -1,0 +1,42 @@
+﻿@model AerolineaVIP_MVC.Models.ModeloAeronave
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>ModeloAeronave</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Fabricante)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Fabricante)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Nombre)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Nombre)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CapacidadAsientos)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CapacidadAsientos)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ModeloAeronaveId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

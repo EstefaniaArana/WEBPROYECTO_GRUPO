@@ -1,0 +1,33 @@
+﻿@model AerolineaVIP_MVC.Models.Vuelo
+
+<div class="form-group">
+    <label class="control-label col-md-2">Frecuencia</label>
+    <div class="col-md-5">
+        @Html.DropDownListFor(m => m.FrecuenciaId, (SelectList)ViewBag.ListaFrecuencias, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.FrecuenciaId, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Fecha</label>
+    <div class="col-md-5">
+        @Html.TextBoxFor(m => m.FechaOperacion, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.FechaOperacion, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Aeronave</label>
+    <div class="col-md-5">
+        @Html.DropDownListFor(m => m.AeronaveId, (SelectList)ViewBag.ListaAeronaves, "-- Sin asignar --", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.AeronaveId, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label col-md-2">Estado</label>
+    <div class="col-md-5">
+        @Html.DropDownListFor(m => m.EstadoVueloCodigo, (SelectList)ViewBag.ListaEstados, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.EstadoVueloCodigo, "", new { @class = "text-danger" })
+    </div>
+</div>

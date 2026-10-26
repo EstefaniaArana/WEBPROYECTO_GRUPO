@@ -1,0 +1,55 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Aeropuerto>
+@{
+    ViewBag.Title = "Aeropuertos";
+}
+
+<h2>Aeropuertos</h2>
+
+@* Mensajes de error (vienen del controlador) *@
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<p>@Html.ActionLink("Crear nuevo", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTRO: envía el texto "buscar" al método Index del controlador *@
+@using (Html.BeginForm("Index", "Aeropuerto", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <input type="text" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Nombre, ciudad o código" />
+    <input type="submit" value="Buscar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Localidad</th>
+        <th>Activo</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.CodigoIATA</td>
+            <td>@item.Nombre</td>
+            <td>@item.Localidad</td>
+            <td>@(item.Activo ? "Sí" : "No")</td>
+            <td>
+                @Html.ActionLink("Editar", "Edit", new { id = item.AeropuertoId }) |
+                @Html.ActionLink("Detalle", "Details", new { id = item.AeropuertoId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.AeropuertoId })
+                }
+            </td>
+        </tr>
+    }
+</table>

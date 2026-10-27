@@ -1,48 +1,23 @@
 ﻿@model AerolineaVIP_MVC.Models.Itinerario
-
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Eliminar itinerario";
 }
 
-<h2>Delete</h2>
+<h2>Eliminar itinerario</h2>
+<h4>¿Seguro que desea eliminar este itinerario?</h4>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Itinerario</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Referencia)
-        </dt>
+<dl class="dl-horizontal">
+    <dt>Referencia</dt>
+    <dd>@Model.Referencia</dd>
+    <dt>Nombre</dt>
+    <dd>@Model.Nombre</dd>
+    <dt>Estado</dt>
+    <dd>@Model.EstadoItinerarioCodigo</dd>
+</dl>
 
-        <dd>
-            @Html.DisplayFor(model => model.Referencia)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.EstadoItinerario.Descripcion)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.EstadoItinerario.Descripcion)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
-        @Html.AntiForgeryToken()
-
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
-        </div>
-    }
-</div>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="submit" value="Eliminar" class="btn btn-danger" />
+    @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-default" })
+}

@@ -1,0 +1,53 @@
+﻿
+@model AerolineaVIP_MVC.Models.Itinerario
+@{
+    ViewBag.Title = "Tramos del itinerario";
+    var tramos = (List<AerolineaVIP_MVC.Controllers.TramoFila>)ViewBag.Tramos;
+}
+
+<h2>Tramos del itinerario</h2>
+<h4>@Model.Referencia · @Model.Nombre</h4>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+
+<table class="table table-striped">
+    <tr>
+        <th>Orden</th>
+        <th>Vuelo</th>
+        <th></th>
+    </tr>
+
+    @if (tramos.Count == 0)
+    {
+        <tr><td colspan="3">Este itinerario aún no tiene tramos.</td></tr>
+    }
+
+    @foreach (var t in tramos)
+    {
+        <tr>
+            <td>@t.Orden</td>
+            <td>@t.Texto</td>
+            <td>
+                @* Quitar tramo: se envía por POST *@
+                @using (Html.BeginForm("QuitarTramo", "Itinerario", new { id = t.TramoItinerarioId }, FormMethod.Post, new { @class = "form-inline" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="submit" value="Quitar" class="btn btn-danger btn-xs" />
+                }
+            </td>
+        </tr>
+    }
+</table>
+<p class="text-muted">Solo se puede quitar el último tramo para mantener la continuidad del viaje.</p>
+
+<h4>Agregar tramo</h4>
+@using (Html.BeginForm("AgregarTramo", "Itinerario", FormMethod.Post, new { @class = "form-inline" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="itinerarioId" value="@Model.ItinerarioId" />
+    @Html.DropDownList("vueloId", (SelectList)ViewBag.ListaVuelos, new { @class = "form-control" })
+    <input type="submit" value="Agregar al final" class="btn btn-primary" />
+}
+<br />
+@Html.ActionLink("Volver a itinerarios", "Index", null, new { @class = "btn btn-default" })

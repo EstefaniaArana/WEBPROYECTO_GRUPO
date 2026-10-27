@@ -1,0 +1,51 @@
+﻿@model IEnumerable<AerolineaVIP_MVC.Models.Reserva>
+@{
+    ViewBag.Title = "Reservas";
+    var usuarios = (Dictionary<string, string>)ViewBag.Usuarios;
+    var asientos = (Dictionary<int, int>)ViewBag.Asientos;
+    var compras = (Dictionary<int, string>)ViewBag.Compras;
+}
+
+<h2>Reservas</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div> }
+
+@* FILTROS: código de reserva y estado (lista desplegable) *@
+@using (Html.BeginForm("Index", "Reserva", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <input type="text" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Código (ej. RV0000)" />
+    @Html.DropDownList("estado", (SelectList)ViewBag.Estados, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
+    <tr>
+        <th>Código</th>
+        <th>Usuario</th>
+        <th>Creada</th>
+        <th>Expira</th>
+        <th>Reserva</th>
+        <th>Compra</th>
+        <th>Asientos</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.CodigoReserva</td>
+            <td>@(usuarios.ContainsKey(item.UsuarioId) ? usuarios[item.UsuarioId] : "(no encontrado)")</td>
+            <td>@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@(item.FechaExpiracion != null ? item.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "—")</td>
+            <td>@item.EstadoReservaCodigo</td>
+            <td>@(compras.ContainsKey(item.ReservaId) ? compras[item.ReservaId] : "Sin compra")</td>
+            <td>@(asientos.ContainsKey(item.ReservaId) ? asientos[item.ReservaId] : 0)</td>
+            <td>@Html.ActionLink("Detalle", "Details", new { id = item.ReservaId })</td>
+        </tr>
+    }
+</table>

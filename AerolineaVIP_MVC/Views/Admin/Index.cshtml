@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewBag.Title = "Administración";
+}
+
+<h2>Administración</h2>
+<p class="text-muted">Accesos a los módulos administrativos.</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Vuelos e itinerarios (pantalla 18)</div>
+            <div class="list-group">
+                @Html.ActionLink("Vuelos", "Index", "Vuelo", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Frecuencias", "Index", "Frecuencia", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Itinerarios y tramos", "Index", "Itinerario", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Rutas", "Index", "Ruta", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Aeropuertos", "Index", "Aeropuerto", null, new { @class = "list-group-item" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Aeronaves (pantalla 19)</div>
+            <div class="list-group">
+                @Html.ActionLink("Aeronaves", "Index", "Aeronave", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Modelos de aeronave", "Index", "ModeloAeronave", null, new { @class = "list-group-item" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Pasajeros y reservas (pantalla 20)</div>
+            <div class="list-group">
+                @Html.ActionLink("Pasajeros", "Index", "Pasajero", null, new { @class = "list-group-item" })
+                @Html.ActionLink("Reservas", "Index", "Reserva", null, new { @class = "list-group-item" })
+            </div>
+        </div>
+    </div>
+</div>

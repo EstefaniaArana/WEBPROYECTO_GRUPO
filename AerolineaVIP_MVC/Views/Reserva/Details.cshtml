@@ -1,0 +1,61 @@
+﻿@model AerolineaVIP_MVC.Models.Reserva
+@{
+    ViewBag.Title = "Detalle de reserva";
+    var filas = (List<AerolineaVIP_MVC.Controllers.AsignacionFila>)ViewBag.Filas;
+    bool sePuedeCancelar = Model.EstadoReservaCodigo == "PENDIENTE" || Model.EstadoReservaCodigo == "CONFIRMADA";
+}
+
+<h2>Reserva @Model.CodigoReserva</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (TempData["Ok"] != null)
+{<div class="alert alert-success">@TempData["Ok"]</div>}
+
+<dl class="dl-horizontal">
+    <dt>Usuario</dt>
+    <dd>@ViewBag.Usuario</dd>
+    <dt>Creada</dt>
+    <dd>@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+    <dt>Expira</dt>
+    <dd>@(Model.FechaExpiracion != null ? Model.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "—")</dd>
+    <dt>Estado de la reserva</dt>
+    <dd>@Model.EstadoReservaCodigo</dd>
+    <dt>Compra</dt>
+    <dd>@ViewBag.Compra</dd>
+</dl>
+
+<h4>Pasajeros y asientos</h4>
+<table class="table table-striped">
+    <tr>
+        <th>Pasajero</th>
+        <th>Vuelo</th>
+        <th>Asiento</th>
+        <th>Importe (USD)</th>
+        <th>Estado</th>
+    </tr>
+
+    @foreach (var f in filas)
+    {
+        <tr>
+            <td>@f.Pasajero</td>
+            <td>@f.Vuelo</td>
+            <td>@f.Asiento</td>
+            <td>@f.Importe.ToString("N2")</td>
+            <td>@f.Estado</td>
+        </tr>
+    }
+</table>
+
+@if (sePuedeCancelar)
+{
+    using (Html.BeginForm("Cancelar", "Reserva", new { id = Model.ReservaId }, FormMethod.Post,
+           new { onsubmit = "return confirm('Se cancelará la reserva y se liberarán sus asientos. ¿Continuar?');" }))
+    {
+        @Html.AntiForgeryToken()
+        <input type="submit" value="Cancelar reserva" class="btn btn-danger" />
+    }
+    <p class="text-muted">Las condiciones de reembolso están pendientes de aprobación (DP-08): la compra y el pago no se modifican.</p>
+}
+
+@Html.ActionLink("Volver a reservas", "Index", null, new { @class = "btn btn-default" })

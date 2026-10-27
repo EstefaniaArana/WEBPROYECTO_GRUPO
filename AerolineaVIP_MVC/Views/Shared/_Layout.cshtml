@@ -1,37 +1,102 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Mi aplicación ASP.NET</title>
+    <title>@ViewBag.Title - Aerolínea VIP</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    <style>
+        /* Identidad sobria: azul oscuro, blanco, gris y dorado */
+        .navbar-inverse {
+            background-color: #0b2545;
+            border-color: #0b2545;
+        }
 
+            .navbar-inverse .navbar-brand {
+                color: #c9a227;
+                font-weight: bold;
+                letter-spacing: 1px;
+            }
+
+            .navbar-inverse .navbar-nav > li > a {
+                color: #ffffff;
+            }
+
+                .navbar-inverse .navbar-nav > li > a:hover {
+                    color: #c9a227;
+                }
+
+            .navbar-inverse .navbar-nav > .open > a,
+            .navbar-inverse .navbar-nav > .open > a:hover,
+            .navbar-inverse .navbar-nav > .open > a:focus {
+                background-color: #13315c;
+                color: #c9a227;
+            }
+
+        footer {
+            color: #777;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+    @{
+        // Se calcula una sola vez si el usuario es personal administrativo
+        bool esAdmin = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador");
+    }
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
-            @Html.ActionLink("Nombre de la aplicación", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Alternar navegación" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("AEROLÍNEA VIP", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Inicio", "Index", "Home")</li>
+
+                    @* Los links del cliente (Vuelos, Mis reservas, Check-in, Comprobantes)
+                        se agregan aquí cuando se construyan esas pantallas *@
+
+                    @if (esAdmin)
+                    {
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                Administración <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Panel de accesos", "Index", "Admin")</li>
+                                <li class="divider"></li>
+                                <li>@Html.ActionLink("Vuelos", "Index", "Vuelo")</li>
+                                <li>@Html.ActionLink("Frecuencias", "Index", "Frecuencia")</li>
+                                <li>@Html.ActionLink("Itinerarios", "Index", "Itinerario")</li>
+                                <li>@Html.ActionLink("Rutas", "Index", "Ruta")</li>
+                                <li>@Html.ActionLink("Aeropuertos", "Index", "Aeropuerto")</li>
+                                <li class="divider"></li>
+                                <li>@Html.ActionLink("Aeronaves", "Index", "Aeronave")</li>
+                                <li>@Html.ActionLink("Modelos de aeronave", "Index", "ModeloAeronave")</li>
+                                <li class="divider"></li>
+                                <li>@Html.ActionLink("Pasajeros", "Index", "Pasajero")</li>
+                                <li>@Html.ActionLink("Reservas", "Index", "Reserva")</li>
+                            </ul>
+                        </li>
+                    }
                 </ul>
-                 @Html.Partial("_LoginPartial")
+                @Html.Partial("_LoginPartial")
             </div>
         </div>
-    </nav>
+    </div>
+
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Mi aplicación ASP.NET</p>
+            <p>&copy; @DateTime.Now.Year - Aerolínea VIP · Proyecto académico. Pagos simulados, sin validez tributaria.</p>
         </footer>
     </div>
 

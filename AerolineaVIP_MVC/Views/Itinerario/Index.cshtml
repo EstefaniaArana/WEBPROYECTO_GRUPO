@@ -1,45 +1,52 @@
 ﻿@model IEnumerable<AerolineaVIP_MVC.Models.Itinerario>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Itinerarios";
+    var cantidad = (Dictionary<int, int>)ViewBag.Cantidad;
 }
 
-<h2>Index</h2>
+<h2>Itinerarios</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger">@ViewBag.Error</div>}
+
+<p>@Html.ActionLink("Crear nuevo", "Create", null, new { @class = "btn btn-primary" })</p>
+
+@* FILTROS: texto y estado (lista desplegable) *@
+@using (Html.BeginForm("Index", "Itinerario", FormMethod.Get, new { @class = "form-inline" }))
+{
+    <input type="text" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Referencia o nombre" />
+    @Html.DropDownList("estado", (SelectList)ViewBag.Estados, "-- Todos --", new { @class = "form-control" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+    @Html.ActionLink("Limpiar", "Index", null, new { @class = "btn btn-link" })
+}
+<br />
+
+<table class="table table-striped">
     <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Referencia)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Nombre)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EstadoItinerario.Descripcion)
-        </th>
+        <th>Referencia</th>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th>Tramos</th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Referencia)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Nombre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EstadoItinerario.Descripcion)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ItinerarioId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ItinerarioId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ItinerarioId })
-        </td>
-    </tr>
-}
-
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Referencia</td>
+            <td>@item.Nombre</td>
+            <td>@item.EstadoItinerarioCodigo</td>
+            <td>@(cantidad.ContainsKey(item.ItinerarioId) ? cantidad[item.ItinerarioId] : 0)</td>
+            <td>
+                @Html.ActionLink("Tramos", "Tramos", new { id = item.ItinerarioId }) |
+                @Html.ActionLink("Editar", "Edit", new { id = item.ItinerarioId })
+                @if (User.IsInRole("SuperUsuario"))
+                {
+                    <text> | </text>@Html.ActionLink("Eliminar", "Delete", new { id = item.ItinerarioId })
+                }
+            </td>
+        </tr>
+    }
 </table>

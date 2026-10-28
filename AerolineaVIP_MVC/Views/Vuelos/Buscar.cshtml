@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Buscar vuelos";
+    var dias = (List<AerolineaVIP_MVC.Controllers.DiaRuta>)ViewBag.DiasRutas;
+}
+
+<h2>Buscar vuelos</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-warning" role="alert">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+
+@Html.Partial("_FormBusqueda")
+
+<h3>Días de operación</h3>
+<table class="table table-striped">
+    <tr>
+        <th>Ruta</th>
+        <th>Días</th>
+    </tr>
+    @foreach (var d in dias)
+    {
+        <tr>
+            <td>@d.Ruta</td>
+            <td>@d.Dias</td>
+        </tr>
+    }
+</table>
+<p class="text-muted">Quito–Galápagos se realiza con escala en Guayaquil, los domingos.</p>
+
+@section Scripts {
+    <script src="@Url.Content("~/Scripts/busqueda.js")"></script>
+}

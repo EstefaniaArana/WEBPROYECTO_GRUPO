@@ -7,12 +7,13 @@ using AerolineaVIP_MVC.Models;
 
 namespace AerolineaVIP_MVC.Controllers
 {
-    // CONTROLADOR DE VUELOS: maneja la tabla Vuelo (una frecuencia en una fecha concreta).
+    // CONTROLADOR DE VUELOS (ADMINISTRACIÓN): maneja la tabla Vuelo (una frecuencia en una fecha concreta).
     // Sus vistas están en Views/Vuelo (Index, Create, Edit, Delete y _Campos).
     // Los datos vienen de la base AerolineaVIP (cadena AerolineaVIPEntities).
     // Para mostrar la ruta y el horario se leen también Frecuencia, Ruta y Aeropuerto.
     // Los triggers de SQL Server también validan estas reglas; aquí se validan antes
     // para mostrar un mensaje claro al usuario.
+    // OJO: las pantallas públicas (buscar y ver asientos) están en VuelosController (plural).
     [Authorize(Roles = "SuperUsuario,Administrador")]
     public class VueloController : Controller
     {

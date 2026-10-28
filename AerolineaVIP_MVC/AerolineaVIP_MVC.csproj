@@ -183,6 +183,7 @@
     <Compile Include="Controllers\ReservaController.cs" />
     <Compile Include="Controllers\RutaController.cs" />
     <Compile Include="Controllers\VueloController.cs" />
+    <Compile Include="Controllers\VuelosController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -359,6 +360,7 @@
       <DependentUpon>AerolineaVIPModel.edmx</DependentUpon>
     </Content>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\busqueda.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.js" />
@@ -427,7 +429,7 @@
     <Content Include="Views\Aeronave\Index.cshtml" />
     <Content Include="Views\Vuelo\Create.cshtml" />
     <Content Include="Views\Vuelo\Delete.cshtml" />
-    <Content Include="Views\Vuelo\Details.cshtml" />
+    <Content Include="Views\Vuelos\Details.cshtml" />
     <Content Include="Views\Vuelo\Edit.cshtml" />
     <Content Include="Views\Vuelo\Index.cshtml" />
     <Content Include="Views\Pasajero\Create.cshtml" />
@@ -449,6 +451,11 @@
     <Content Include="Views\Reserva\Details.cshtml" />
     <Content Include="Views\Reserva\Index.cshtml" />
     <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Shared\_FormBusqueda.cshtml" />
+    <Content Include="Views\Vuelos\Buscar.cshtml" />
+    <Content Include="Views\Vuelos\Resultados.cshtml" />
+    <Content Include="Views\Vuelos\Disponibilidad.cshtml" />
+    <Content Include="Views\Vuelos\_MapaAsientos.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

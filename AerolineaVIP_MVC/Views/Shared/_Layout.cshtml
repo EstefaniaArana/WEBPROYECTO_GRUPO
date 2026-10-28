@@ -7,31 +7,46 @@
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     <style>
-        /* Identidad sobria: azul oscuro, blanco, gris y dorado */
-        .navbar-inverse {
-            background-color: #0b2545;
-            border-color: #0b2545;
+        /* Deja espacio para que el menú fijo no tape el contenido */
+        body {
+            padding-top: 80px;
         }
 
-            .navbar-inverse .navbar-brand {
+        /* Identidad sobria: azul oscuro, blanco, gris y dorado */
+        .navbar-vip {
+            background-color: #0b2545;
+        }
+
+            .navbar-vip .navbar-brand {
                 color: #c9a227;
                 font-weight: bold;
                 letter-spacing: 1px;
             }
 
-            .navbar-inverse .navbar-nav > li > a {
+            .navbar-vip .nav-link,
+            .navbar-vip .navbar-text {
                 color: #ffffff;
             }
 
-                .navbar-inverse .navbar-nav > li > a:hover {
+                .navbar-vip .nav-link:hover {
                     color: #c9a227;
                 }
 
-            .navbar-inverse .navbar-nav > .open > a,
-            .navbar-inverse .navbar-nav > .open > a:hover,
-            .navbar-inverse .navbar-nav > .open > a:focus {
+            .navbar-vip .dropdown-menu {
                 background-color: #13315c;
-                color: #c9a227;
+            }
+
+            .navbar-vip .dropdown-item {
+                color: #ffffff;
+            }
+
+                .navbar-vip .dropdown-item:hover {
+                    background-color: #0b2545;
+                    color: #c9a227;
+                }
+
+            .navbar-vip .dropdown-divider {
+                border-color: #2b4a7a;
             }
 
         footer {
@@ -45,58 +60,59 @@
         bool esAdmin = User.IsInRole("SuperUsuario") || User.IsInRole("Administrador");
     }
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    @* fixed-top = el menú queda fijo arriba aunque se haga scroll *@
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-vip fixed-top">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("AEROLÍNEA VIP", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
+            @Html.ActionLink("AEROLÍNEA VIP", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
 
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Inicio", "Index", "Home")</li>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+                    aria-controls="menuPrincipal" aria-expanded="false" aria-label="Mostrar menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                    @* Los links del cliente (Vuelos, Mis reservas, Check-in, Comprobantes)
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Vuelos", "Buscar", "Vuelos", null, new { @class = "nav-link" })</li>
+
+                    @* Los links del cliente (Mis reservas, Check-in, Comprobantes)
                         se agregan aquí cuando se construyan esas pantallas *@
 
                     @if (esAdmin)
                     {
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                                Administración <span class="caret"></span>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Administración
                             </a>
                             <ul class="dropdown-menu">
-                                <li>@Html.ActionLink("Panel de accesos", "Index", "Admin")</li>
-                                <li class="divider"></li>
-                                <li>@Html.ActionLink("Vuelos", "Index", "Vuelo")</li>
-                                <li>@Html.ActionLink("Frecuencias", "Index", "Frecuencia")</li>
-                                <li>@Html.ActionLink("Itinerarios", "Index", "Itinerario")</li>
-                                <li>@Html.ActionLink("Rutas", "Index", "Ruta")</li>
-                                <li>@Html.ActionLink("Aeropuertos", "Index", "Aeropuerto")</li>
-                                <li class="divider"></li>
-                                <li>@Html.ActionLink("Aeronaves", "Index", "Aeronave")</li>
-                                <li>@Html.ActionLink("Modelos de aeronave", "Index", "ModeloAeronave")</li>
-                                <li class="divider"></li>
-                                <li>@Html.ActionLink("Pasajeros", "Index", "Pasajero")</li>
-                                <li>@Html.ActionLink("Reservas", "Index", "Reserva")</li>
+                                <li>@Html.ActionLink("Panel de accesos", "Index", "Admin", null, new { @class = "dropdown-item" })</li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>@Html.ActionLink("Vuelos", "Index", "Vuelo", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Frecuencias", "Index", "Frecuencia", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Itinerarios", "Index", "Itinerario", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Rutas", "Index", "Ruta", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Aeropuertos", "Index", "Aeropuerto", null, new { @class = "dropdown-item" })</li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>@Html.ActionLink("Aeronaves", "Index", "Aeronave", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Modelos de aeronave", "Index", "ModeloAeronave", null, new { @class = "dropdown-item" })</li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>@Html.ActionLink("Pasajeros", "Index", "Pasajero", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Reservas", "Index", "Reserva", null, new { @class = "dropdown-item" })</li>
                             </ul>
                         </li>
                     }
                 </ul>
+
                 @Html.Partial("_LoginPartial")
             </div>
         </div>
-    </div>
+    </nav>
 
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Aerolínea VIP · Proyecto académico. Pagos simulados, sin validez tributaria.</p>
+            <p>&copy; @DateTime.Now.Year - Aerolínea VIP GRUPO2.</p>
         </footer>
     </div>
 

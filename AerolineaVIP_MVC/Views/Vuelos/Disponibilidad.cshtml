@@ -1,0 +1,82 @@
+﻿@model AerolineaVIP_MVC.Controllers.DisponibilidadVista
+@{
+    ViewBag.Title = "Disponibilidad de asientos";
+    var v = Model.Vuelo;
+}
+
+<h2>Disponibilidad de asientos</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-warning" role="alert">@TempData["Error"]</div>}
+
+<div class="row">
+    <div class="col-md-4">
+        <dl class="dl-horizontal">
+            <dt>Vuelo</dt>
+            <dd>@v.Codigo</dd>
+            <dt>Ruta</dt>
+            <dd>@v.CiudadOrigen (@v.Origen) → @v.CiudadDestino (@v.Destino)</dd>
+            <dt>Fecha</dt>
+            <dd>@v.Salida.ToString("dd/MM/yyyy")</dd>
+            <dt>Horario</dt>
+            <dd>@v.Salida.ToString("HH:mm") – @v.Llegada.ToString("HH:mm")</dd>
+            <dt>Aeronave</dt>
+            <dd>@(v.TieneAeronave ? v.Matricula + " · " + v.Modelo : "Sin asignar")</dd>
+            <dt>Capacidad</dt>
+            <dd>@(v.TieneAeronave ? v.Capacidad + " asientos" : "—")</dd>
+            <dt>Estado</dt>
+            <dd>@v.Estado.ToLower()</dd>
+        </dl>
+
+        @if (v.TieneAeronave)
+        {
+            <table class="table table-condensed">
+                <tr><td>Asientos disponibles</td><td><strong>@Model.Disponibles de @v.Capacidad</strong></td></tr>
+                <tr><td>Reservados (pendientes de pago)</td><td>@Model.Reservados</td></tr>
+                <tr><td>Ocupados (compra pagada)</td><td>@Model.Ocupados</td></tr>
+            </table>
+        }
+
+        <div class="alert alert-info" role="alert">
+            Disponibilidad calculada a las @Model.Corte.ToString("HH:mm"). Se comprobará nuevamente al confirmar la reserva.
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        @if (!v.TieneAeronave)
+        {
+            <div class="alert alert-info" role="alert">@Model.Mensaje</div>
+        }
+        else
+        {
+            @Html.Partial("_MapaAsientos", Model.Asientos)
+
+            @* Leyenda: siempre con texto además del color *@
+            <p style="margin-top:15px;">
+                <span class="label" style="background:#2e7d32;">Verde · Disponible</span>
+                <span class="label" style="background:#6a1b9a;">Morado · Reservado (pendiente de pago)</span>
+                <span class="label" style="background:#c62828;">Rojo · Ocupado (compra pagada)</span>
+            </p>
+
+            if (Model.Mensaje != null)
+            {
+                <div class="alert alert-warning" role="alert">@Model.Mensaje</div>
+            }
+        }
+    </div>
+</div>
+
+<p>
+    @Html.ActionLink("Actualizar disponibilidad", "Disponibilidad", new { id = v.VueloId }, new { @class = "btn btn-default" })
+
+    @if (Model.PuedeContinuar)
+    {
+        @Html.ActionLink("Continuar", "SeleccionAsiento", "Reservas", new { id = v.VueloId }, new { @class = "btn btn-primary" })
+    }
+    else
+    {
+        <button type="button" class="btn btn-primary" disabled>Continuar</button>
+    }
+
+    <a href="javascript:history.back()" class="btn btn-default">Regresar a resultados</a>
+</p>

@@ -1,0 +1,103 @@
+﻿@model List<AerolineaVIP_MVC.Controllers.OpcionViaje>
+@{
+    ViewBag.Title = "Resultados de vuelos";
+    int pasajeros = (int)ViewBag.Pasajeros;
+    string origen = ViewBag.Origen;
+    string destino = ViewBag.Destino;
+    string fecha = ViewBag.Fecha;
+}
+
+<h2>Resultados de vuelos</h2>
+<p>
+    <strong>@ViewBag.Resumen</strong>
+    @Html.ActionLink("Modificar búsqueda", "Buscar",
+        new { origen = origen, destino = destino, fecha = fecha, pasajeros = pasajeros },
+        new { @class = "btn btn-default btn-sm" })
+</p>
+
+@* Filtro opcional por horario *@
+<form method="get" action="@Url.Action("Resultados", "Vuelos")" class="form-inline">
+    <input type="hidden" name="origen" value="@origen" />
+    <input type="hidden" name="destino" value="@destino" />
+    <input type="hidden" name="fecha" value="@fecha" />
+    <input type="hidden" name="pasajeros" value="@pasajeros" />
+    <label for="horario">Horario:</label>
+    @Html.DropDownList("horario", (SelectList)ViewBag.Horarios, "Todos", new { @class = "form-control", id = "horario" })
+    <input type="submit" value="Filtrar" class="btn btn-default" />
+</form>
+<br />
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        No hay vuelos para los criterios seleccionados.
+        @if (ViewBag.Info != null)
+        {<text><br />@ViewBag.Info</text>}
+    </div>
+    @Html.ActionLink("Modificar búsqueda", "Buscar",
+        new { origen = origen, destino = destino, fecha = fecha, pasajeros = pasajeros },
+        new { @class = "btn btn-primary" })
+}
+
+@foreach (var op in Model)
+{
+    <div class="panel @(op.Vendible ? "panel-primary" : "panel-default")">
+        <div class="panel-heading">
+            @if (op.Tramos.Count > 1)
+            {
+                <strong>Itinerario con escala en @op.Tramos[0].CiudadDestino</strong>
+            }
+            else
+            {
+                <strong>Vuelo directo</strong>
+            }
+        </div>
+        <div class="panel-body">
+
+            @for (int i = 0; i < op.Tramos.Count; i++)
+            {
+                var t = op.Tramos[i];
+                <p>
+                    @if (op.Tramos.Count > 1)
+                    {<strong>Tramo @(i + 1): </strong>}
+                    <strong>@t.Salida.ToString("HH:mm") – @t.Llegada.ToString("HH:mm")</strong>
+                    · @t.CiudadOrigen (@t.Origen) → @t.CiudadDestino (@t.Destino)
+                    · @t.Codigo
+                    · @(t.TieneAeronave ? "Aeronave " + t.Matricula : "Sin aeronave asignada")
+                    @if (t.TieneAeronave)
+                    {<text>· @t.Disponibles de @t.Capacidad disponibles</text>}
+                    · Estado: @t.Estado.ToLower()
+                    <br />
+                    @Html.ActionLink("Consultar disponibilidad", "Disponibilidad", new { id = t.VueloId }, new { @class = "btn btn-default btn-xs" })
+                </p>
+            }
+
+            @if (op.Mensaje != null)
+            {<div class="alert alert-info" role="alert">@op.Mensaje</div>}
+            @if (op.Aviso != null)
+            {<div class="alert alert-warning" role="alert">@op.Aviso</div>}
+
+            @if (op.Vendible)
+            {
+                if (op.Tramos.Count > 1)
+                {
+                    @Html.ActionLink("Seleccionar vuelo", "SeleccionAsiento", "Reservas",
+                        new { id = op.Tramos[0].VueloId, tramo2 = op.Tramos[1].VueloId, pasajeros = pasajeros },
+                        new { @class = "btn btn-primary" })
+                }
+                else
+                {
+                    @Html.ActionLink("Seleccionar vuelo", "SeleccionAsiento", "Reservas",
+                        new { id = op.Tramos[0].VueloId, pasajeros = pasajeros },
+                        new { @class = "btn btn-primary" })
+                }
+            }
+            else
+            {
+                <button type="button" class="btn btn-primary" disabled>Seleccionar vuelo</button>
+            }
+        </div>
+    </div>
+}
+
+<p class="text-muted">La disponibilidad se verificará para la fecha y el vuelo seleccionados.</p>

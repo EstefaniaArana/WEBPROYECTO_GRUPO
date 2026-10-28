@@ -3,7 +3,7 @@
     var destinos = (List<AerolineaVIP_MVC.Controllers.DestinoTarjeta>)ViewBag.Destinos;
 }
 
-<div class="jumbotron" style="margin-top:20px; background-color:#0b2545; color:#fff;">
+<div class="p-5 mb-4 rounded-3" style="background-color:#0b2545; color:#fff;">
     <h1>Vuela a tu próximo destino</h1>
     <p>Viajes privados con atención personalizada.</p>
 </div>
@@ -14,40 +14,7 @@
 }
 
 <h2>Encuentra tu vuelo</h2>
-
-@* Errores de validación del cliente (jQuery) *@
-<div id="errores" class="alert alert-danger" role="alert" style="display:none;"></div>
-
-@* La búsqueda se envía por GET a Vuelos/Resultados (pantalla 6) *@
-@using (Html.BeginForm("Resultados", "Vuelos", FormMethod.Get, new { id = "formBusqueda", @class = "form-horizontal" }))
-{
-    <div class="row">
-        <div class="col-md-3 col-sm-6">
-            <label for="origen">Origen *</label>
-            @Html.DropDownList("origen", (SelectList)ViewBag.Origenes, new { @class = "form-control", id = "origen" })
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <label for="destino">Destino *</label>
-            <select name="destino" id="destino" class="form-control">
-                <option value="">Seleccionar destino</option>
-            </select>
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <label for="fecha">Fecha de salida *</label>
-            <input type="date" name="fecha" id="fecha" class="form-control" min="@ViewBag.Hoy" />
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <label for="pasajeros">Pasajeros * (1 a 7)</label>
-            <input type="number" name="pasajeros" id="pasajeros" class="form-control" min="1" max="7" value="1" />
-        </div>
-    </div>
-    <br />
-    <button type="submit" id="btnBuscar" class="btn btn-primary btn-lg">Buscar vuelos</button>
-    <p class="text-muted"><br />Horarios sujetos a la programación establecida y disponibilidad real.</p>
-}
+@Html.Partial("_FormBusqueda")
 
 <h2>Destinos</h2>
 <div class="row">
@@ -63,69 +30,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        $(function () {
-            var hoy = '@ViewBag.Hoy';
-
-            function mostrarErrores(lista) {
-                $('#errores').html(lista.join('<br />')).show();
-            }
-
-            // Carga los destinos según el origen elegido
-            function cargarDestinos() {
-                var origen = $('#origen').val();
-                var $destino = $('#destino');
-                $destino.empty().append('<option value="">Seleccionar destino</option>');
-                $('#btnBuscar').prop('disabled', false);
-                if (!origen) { return; }
-
-                $.getJSON('@Url.Action("Destinos", "Home")', { origen: origen }, function (lista) {
-                    if (lista.length === 0) {
-                        $destino.empty().append('<option value="">Sin destinos disponibles</option>');
-                        $('#btnBuscar').prop('disabled', true);
-                        return;
-                    }
-                    $.each(lista, function (i, x) {
-                        $destino.append($('<option>').val(x.codigo).text(x.texto));
-                    });
-                }).fail(function () {
-                    mostrarErrores(['No se pudieron cargar los destinos.']);
-                });
-            }
-
-            $('#origen').on('change', cargarDestinos);
-            cargarDestinos();
-
-            // Validación del cliente al enviar (el servidor la repite en Vuelos/Resultados)
-            $('#formBusqueda').on('submit', function (e) {
-                var errores = [];
-                var pasajeros = parseInt($('#pasajeros').val(), 10);
-
-                if (!$('#origen').val()) { errores.push('Seleccione el origen.'); }
-                if (!$('#destino').val()) { errores.push('Seleccione el destino.'); }
-                if ($('#origen').val() && $('#origen').val() === $('#destino').val()) {
-                    errores.push('El origen y el destino deben ser distintos.');
-                }
-                if (!$('#fecha').val()) { errores.push('Indique la fecha de salida.'); }
-                else if ($('#fecha').val() < hoy) { errores.push('La fecha no puede ser anterior a hoy.'); }
-                if (isNaN(pasajeros) || pasajeros < 1 || pasajeros > 7) {
-                    errores.push('La cantidad de pasajeros debe estar entre 1 y 7.');
-                }
-
-                if (errores.length > 0) {
-                    e.preventDefault();
-                    mostrarErrores(errores);
-                    return;
-                }
-
-                $('#errores').hide();
-                $('#btnBuscar').prop('disabled', true).text('Buscando…');   // evita envíos repetidos
-            });
-
-            // Si el usuario regresa con el botón "atrás", se reactiva el botón
-            $(window).on('pageshow', function () {
-                $('#btnBuscar').prop('disabled', false).text('Buscar vuelos');
-            });
-        });
-    </script>
+    <script src="@Url.Content("~/Scripts/busqueda.js")"></script>
 }

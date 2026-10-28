@@ -1,0 +1,112 @@
+﻿@model List<AerolineaVIP_MVC.Controllers.AsientoVista>
+
+@helper Celda(AerolineaVIP_MVC.Controllers.AsientoVista s)
+{
+    if (s == null)
+    {
+        <div class="asiento asiento-puerta" role="img" aria-label="Puerta de acceso"><span>Puerta</span></div>
+    }
+    else
+    {
+        string estado = s.EstadoVisual == "DISPONIBLE" ? "Disponible" : s.EstadoVisual == "RESERVADO" ? "Reservado" : "Ocupado";
+        string clase = s.EstadoVisual == "DISPONIBLE" ? "asiento-disponible" : s.EstadoVisual == "RESERVADO" ? "asiento-reservado" : "asiento-ocupado";
+
+        <div class="asiento @clase" data-codigo="@s.Codigo" data-estado="@s.EstadoVisual" role="img"
+             aria-label="Asiento @s.Codigo, @s.Ubicacion, @estado">
+            <strong>@s.Codigo</strong>
+            <span>@estado</span>
+        </div>
+    }
+}
+
+<style>
+    .avion {
+        border: 3px solid #0b2545;
+        border-radius: 40px 20px 20px 40px;
+        padding: 15px;
+        background: #f5f6f8;
+        max-width: 460px;
+    }
+
+    .avion-etiqueta {
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .avion-fila {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .avion-pasillo {
+        text-align: center;
+        margin: 10px 0;
+        padding: 4px 0;
+        background: #dfe3ea;
+        color: #555;
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    .asiento {
+        width: 90px;
+        height: 64px;
+        border-radius: 8px;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+        .asiento strong {
+            font-size: 18px;
+        }
+
+    .asiento-disponible {
+        background: #2e7d32;
+    }
+
+    .asiento-reservado {
+        background: #6a1b9a;
+    }
+
+    .asiento-ocupado {
+        background: #c62828;
+    }
+
+    .asiento-puerta {
+        background: #fff;
+        color: #555;
+        border: 2px dashed #999;
+    }
+</style>
+
+<div class="avion" role="group" aria-label="Distribución de asientos del Embraer Phenom 300E">
+    <div class="avion-etiqueta">◀ Proa (frente) · Lado derecho (D)</div>
+
+    <div class="avion-fila">
+        @for (int fila = 1; fila <= 4; fila++)
+        {
+            int f = fila;
+            @Celda(Model.FirstOrDefault(x => x.Lado == "D" && x.Fila == f))
+        }
+    </div>
+
+    <div class="avion-pasillo">PASILLO</div>
+
+    <div class="avion-fila">
+        @* En la fila 1 del lado izquierdo está la puerta de acceso (no existe el asiento 1I) *@
+        @for (int fila = 1; fila <= 4; fila++)
+        {
+            int f = fila;
+            @Celda(Model.FirstOrDefault(x => x.Lado == "I" && x.Fila == f))
+        }
+    </div>
+
+    <div class="avion-etiqueta" style="margin-top:8px;">Lado izquierdo (I) · Cola (baño y equipaje) ▶</div>
+</div>

@@ -1,0 +1,43 @@
+﻿@{
+    string fechaValor = ViewBag.FechaValor as string ?? "";
+    int pasajerosValor = ViewBag.PasajerosValor is int ? (int)ViewBag.PasajerosValor : 1;
+    string destinoInicial = ViewBag.DestinoInicial as string ?? "";
+    string hoy = ViewBag.Hoy as string ?? "";
+    string urlDestinos = Url.Action("Destinos", "Vuelos");
+}
+
+@* Errores de validación del cliente (jQuery) *@
+<div id="errores" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+@* La búsqueda se envía por GET a Vuelos/Resultados (pantalla 6) *@
+@using (Html.BeginForm("Resultados", "Vuelos", FormMethod.Get,
+        new { id = "formBusqueda", data_destinos_url = urlDestinos, data_hoy = hoy, data_destino_inicial = destinoInicial }))
+{
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <label for="origen">Origen *</label>
+            @Html.DropDownList("origen", (SelectList)ViewBag.Origenes, new { @class = "form-control", id = "origen" })
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="destino">Destino *</label>
+            <select name="destino" id="destino" class="form-control">
+                <option value="">Seleccionar destino</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="fecha">Fecha de salida *</label>
+            <input type="date" name="fecha" id="fecha" class="form-control" min="@hoy" value="@fechaValor" />
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="pasajeros">Pasajeros * (1 a 7)</label>
+            <input type="number" name="pasajeros" id="pasajeros" class="form-control" min="1" max="7" value="@pasajerosValor" />
+        </div>
+    </div>
+    <br />
+    <button type="submit" id="btnBuscar" class="btn btn-primary btn-lg">Buscar vuelos</button>
+    <button type="button" id="btnLimpiar" class="btn btn-default btn-lg">Limpiar filtros</button>
+    <p class="text-muted"><br />Horarios sujetos a la programación establecida y disponibilidad real.</p>
+}

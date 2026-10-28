@@ -74,9 +74,9 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })</li>
                     <li class="nav-item">@Html.ActionLink("Vuelos", "Buscar", "Vuelos", null, new { @class = "nav-link" })</li>
-
+                    <li class="nav-item">@Html.ActionLink("Mis reservas", "MisReservas", "Reservas", null, new { @class = "nav-link" })</li>
                     @* Los links del cliente (Mis reservas, Check-in, Comprobantes)
-                        se agregan aquí cuando se construyan esas pantallas *@
+        se agregan aquí cuando se construyan esas pantallas *@
 
                     @if (esAdmin)
                     {

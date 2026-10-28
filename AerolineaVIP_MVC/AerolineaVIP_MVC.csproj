@@ -181,6 +181,7 @@
     <Compile Include="Controllers\ModeloAeronaveController.cs" />
     <Compile Include="Controllers\PasajeroController.cs" />
     <Compile Include="Controllers\ReservaController.cs" />
+    <Compile Include="Controllers\ReservasController.cs" />
     <Compile Include="Controllers\RutaController.cs" />
     <Compile Include="Controllers\VueloController.cs" />
     <Compile Include="Controllers\VuelosController.cs" />
@@ -456,6 +457,10 @@
     <Content Include="Views\Vuelos\Resultados.cshtml" />
     <Content Include="Views\Vuelos\Disponibilidad.cshtml" />
     <Content Include="Views\Vuelos\_MapaAsientos.cshtml" />
+    <Content Include="Views\Reservas\SeleccionAsiento.cshtml" />
+    <Content Include="Views\Reservas\DatosPasajeros.cshtml" />
+    <Content Include="Views\Reservas\Confirmacion.cshtml" />
+    <Content Include="Views\Reservas\MisReservas.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

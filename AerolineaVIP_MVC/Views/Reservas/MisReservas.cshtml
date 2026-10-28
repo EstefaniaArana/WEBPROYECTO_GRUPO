@@ -1,0 +1,43 @@
+﻿
+@model IEnumerable<AerolineaVIP_MVC.Models.Reserva>
+@{
+    ViewBag.Title = "Mis reservas";
+    var asientos = (Dictionary<int, int>)ViewBag.Asientos;
+}
+
+<h2>Mis reservas</h2>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="alert">Todavía no tiene reservas.</div>
+    @Html.ActionLink("Buscar vuelos", "Buscar", "Vuelos", null, new { @class = "btn btn-primary" })
+}
+else
+{
+    <table class="table table-striped">
+        <tr>
+            <th>Código</th>
+            <th>Creada</th>
+            <th>Vence</th>
+            <th>Estado</th>
+            <th>Asientos</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.CodigoReserva</td>
+                <td>@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@(item.FechaExpiracion != null ? item.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "—")</td>
+                <td>@item.EstadoReservaCodigo</td>
+                <td>@(asientos.ContainsKey(item.ReservaId) ? asientos[item.ReservaId] : 0)</td>
+                <td>@Html.ActionLink("Ver detalle", "Confirmacion", new { id = item.ReservaId })</td>
+            </tr>
+        }
+    </table>
+}

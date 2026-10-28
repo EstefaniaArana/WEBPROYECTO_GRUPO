@@ -1,0 +1,115 @@
+﻿
+@model AerolineaVIP_MVC.Controllers.DatosReservaVista
+@{
+    ViewBag.Title = "Datos de los pasajeros";
+    var tipos = (List<KeyValuePair<string, string>>)ViewBag.Tipos;
+    var errores = ViewBag.Errores as List<string>;
+}
+
+<h2>Datos de los pasajeros</h2>
+
+@if (errores != null && errores.Count > 0)
+{
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">
+            @foreach (var e in errores)
+            {
+                <li>@e</li>
+}
+        </ul>
+    </div>
+}
+
+@* Resumen de los vuelos y asientos elegidos *@
+<div class="card mb-3">
+    <div class="card-header"><strong>Resumen del viaje</strong></div>
+    <ul class="list-group list-group-flush">
+        @foreach (var t in Model.Tramos)
+        {
+            <li class="list-group-item">
+                @t.Texto · Asientos: @string.Join(", ", t.Elegidos.Select(n => t.Asientos.First(a => a.NumeroAsiento == n).Codigo))
+                · USD @t.Tarifa.ToString("N2") por pasajero
+            </li>
+        }
+        <li class="list-group-item"><strong>Total estimado: USD @Model.Total.ToString("N2")</strong></li>
+    </ul>
+</div>
+
+@using (Html.BeginForm("Confirmar", "Reservas", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="cantidad" value="@Model.Cantidad" />
+
+    @* Se conservan los vuelos y los asientos elegidos *@
+    foreach (var t in Model.Tramos)
+    {
+        <input type="hidden" name="vuelos" value="@t.VueloId" />
+        foreach (int n in t.Elegidos)
+        {
+            <input type="hidden" name="@("asientos_" + t.VueloId)" value="@n" />
+        }
+    }
+
+    for (int i = 0; i < Model.Cantidad; i++)
+    {
+        var p = Model.Pasajeros[i];
+        string prefijo = "pasajerosForm[" + i + "].";
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Pasajero @(i + 1)</strong> ·
+                @foreach (var t in Model.Tramos)
+                {
+                    <span>Asiento @t.Asientos.First(a => a.NumeroAsiento == t.Elegidos[i]).Codigo &nbsp;</span>
+                }
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de documento *</label>
+                        <select class="form-select" name="@(prefijo + "TipoDocumentoCodigo")">
+                            @foreach (var tipo in tipos)
+                            {
+                                <option value="@tipo.Key" selected="@(tipo.Key == p.TipoDocumentoCodigo)">@tipo.Value</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Número de documento *</label>
+                        <input type="text" class="form-control" maxlength="20" name="@(prefijo + "NumeroDocumento")" value="@p.NumeroDocumento" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Nombres *</label>
+                        <input type="text" class="form-control" maxlength="100" name="@(prefijo + "Nombres")" value="@p.Nombres" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Apellidos *</label>
+                        <input type="text" class="form-control" maxlength="100" name="@(prefijo + "Apellidos")" value="@p.Apellidos" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" name="@(prefijo + "FechaNacimiento")"
+                               value="@(p.FechaNacimiento != null ? p.FechaNacimiento.Value.ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" maxlength="256" name="@(prefijo + "Correo")" value="@p.Correo" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" maxlength="20" name="@(prefijo + "Telefono")" value="@p.Telefono" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="alert alert-info" role="alert">
+        La reserva quedará <strong>pendiente de pago</strong> y expirará en 15 minutos si no se paga.
+    </div>
+
+    <button type="submit" class="btn btn-primary">Confirmar reserva</button>
+    @Html.ActionLink("Volver a los asientos", "SeleccionAsiento", "Reservas",
+        new { id = Model.Tramos[0].VueloId, tramo2 = Model.Tramos.Count > 1 ? (int?)Model.Tramos[1].VueloId : null, pasajeros = Model.Cantidad },
+        new { @class = "btn btn-outline-secondary" })
+}

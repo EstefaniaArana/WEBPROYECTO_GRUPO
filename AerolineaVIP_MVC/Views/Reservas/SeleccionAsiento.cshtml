@@ -1,0 +1,200 @@
+﻿
+@model List<AerolineaVIP_MVC.Controllers.TramoSeleccion>
+@{
+    ViewBag.Title = "Selección de asientos";
+    int cantidad = (int)ViewBag.Cantidad;
+}
+
+@helper Celda(AerolineaVIP_MVC.Controllers.AsientoVista s, int vueloId)
+{
+    if (s == null)
+    {
+        <div class="asiento asiento-puerta"><span>Puerta</span></div>
+    }
+    else if (s.EstadoVisual == "DISPONIBLE")
+    {
+        <label class="asiento asiento-disponible">
+            <input type="checkbox" class="chk" name="@("asientos_" + vueloId)" value="@s.NumeroAsiento" />
+            <strong>@s.Codigo</strong><span>Libre</span>
+        </label>
+    }
+    else
+    {
+        string estado = s.EstadoVisual == "RESERVADO" ? "Reservado" : "Ocupado";
+        string clase = s.EstadoVisual == "RESERVADO" ? "asiento-reservado" : "asiento-ocupado";
+        <div class="asiento @clase"><strong>@s.Codigo</strong><span>@estado</span></div>
+    }
+}
+
+<style>
+    .avion {
+        border: 3px solid #0b2545;
+        border-radius: 40px 20px 20px 40px;
+        padding: 15px;
+        background: #f5f6f8;
+        max-width: 460px;
+    }
+
+    .avion-etiqueta {
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .avion-fila {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .avion-pasillo {
+        text-align: center;
+        margin: 10px 0;
+        padding: 4px 0;
+        background: #dfe3ea;
+        color: #555;
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    .asiento {
+        width: 90px;
+        height: 64px;
+        border-radius: 8px;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        margin: 0;
+    }
+
+        .asiento strong {
+            font-size: 18px;
+        }
+
+        .asiento input {
+            display: none;
+        }
+
+    .asiento-disponible {
+        background: #2e7d32;
+        cursor: pointer;
+    }
+
+    .asiento-reservado {
+        background: #6a1b9a;
+    }
+
+    .asiento-ocupado {
+        background: #c62828;
+    }
+
+    .asiento-puerta {
+        background: #fff;
+        color: #555;
+        border: 2px dashed #999;
+    }
+
+    .asiento-elegido {
+        background: #1565c0 !important;
+        outline: 3px solid #c9a227;
+    }
+
+    .asiento-bloqueado {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+</style>
+
+<h2>Selección de asientos</h2>
+<p>Elija <strong>@cantidad</strong> asiento(s) en cada vuelo. El primer pasajero recibirá el primer asiento, y así sucesivamente.</p>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-warning" role="alert">@TempData["Error"]</div>}
+
+@using (Html.BeginForm("DatosPasajeros", "Reservas", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="cantidad" value="@cantidad" />
+    foreach (var t in Model)
+    {
+        <input type="hidden" name="vuelos" value="@t.VueloId" />
+    }
+
+    foreach (var t in Model)
+    {
+        <div class="card mb-4 tramo" data-necesarios="@cantidad">
+            <div class="card-header">
+                <strong>@t.Texto</strong> ·
+                <span class="contador">0</span> de @cantidad seleccionados ·
+                @t.Disponibles asientos libres
+            </div>
+            <div class="card-body">
+                <div class="avion" role="group" aria-label="Asientos del vuelo @t.Texto">
+                    <div class="avion-etiqueta">◀ Proa (frente) · Lado derecho (D)</div>
+                    <div class="avion-fila">
+                        @for (int fila = 1; fila <= 4; fila++)
+                        {
+                            int f = fila;
+                            @Celda(t.Asientos.FirstOrDefault(x => x.Lado == "D" && x.Fila == f), t.VueloId)
+                        }
+                    </div>
+                    <div class="avion-pasillo">PASILLO</div>
+                    <div class="avion-fila">
+                        @for (int fila = 1; fila <= 4; fila++)
+                        {
+                            int f = fila;
+                            @Celda(t.Asientos.FirstOrDefault(x => x.Lado == "I" && x.Fila == f), t.VueloId)
+                        }
+                    </div>
+                    <div class="avion-etiqueta" style="margin-top:8px;">Lado izquierdo (I) · Cola ▶</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Leyenda: siempre con texto además del color *@
+    <p>
+        <span class="badge" style="background:#2e7d32;">Verde · Disponible</span>
+        <span class="badge" style="background:#1565c0;">Azul · Elegido por usted</span>
+        <span class="badge" style="background:#6a1b9a;">Morado · Reservado (pendiente de pago)</span>
+        <span class="badge" style="background:#c62828;">Rojo · Ocupado (compra pagada)</span>
+    </p>
+
+    <button type="submit" id="btnContinuar" class="btn btn-primary" disabled>Continuar con los datos de los pasajeros</button>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">Regresar</a>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Revisa cuántos asientos hay marcados en cada vuelo
+            function actualizar() {
+                var todoCorrecto = true;
+                $('.tramo').each(function () {
+                    var necesarios = parseInt($(this).data('necesarios'), 10);
+                    var marcados = $(this).find('.chk:checked').length;
+                    $(this).find('.contador').text(marcados);
+
+                    // Al llegar al límite se bloquean los demás asientos libres
+                    $(this).find('.chk:not(:checked)').each(function () {
+                        var bloquear = marcados >= necesarios;
+                        $(this).prop('disabled', bloquear).closest('label').toggleClass('asiento-bloqueado', bloquear);
+                    });
+
+                    if (marcados !== necesarios) { todoCorrecto = false; }
+                });
+                $('#btnContinuar').prop('disabled', !todoCorrecto);
+            }
+
+            $('.chk').on('change', function () {
+                $(this).closest('label').toggleClass('asiento-elegido', this.checked);
+                actualizar();
+            });
+            actualizar();
+        });
+    </script>
+}

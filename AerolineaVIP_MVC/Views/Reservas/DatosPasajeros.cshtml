@@ -15,7 +15,7 @@
             @foreach (var e in errores)
             {
                 <li>@e</li>
-}
+            }
         </ul>
     </div>
 }
@@ -35,7 +35,7 @@
     </ul>
 </div>
 
-@using (Html.BeginForm("Confirmar", "Reservas", FormMethod.Post))
+@using (Html.BeginForm("Resumen", "Reservas", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
     <input type="hidden" name="cantidad" value="@Model.Cantidad" />
@@ -108,7 +108,7 @@
         La reserva quedará <strong>pendiente de pago</strong> y expirará en 15 minutos si no se paga.
     </div>
 
-    <button type="submit" class="btn btn-primary">Confirmar reserva</button>
+    <button type="submit" class="btn btn-primary">Continuar al resumen</button>
     @Html.ActionLink("Volver a los asientos", "SeleccionAsiento", "Reservas",
         new { id = Model.Tramos[0].VueloId, tramo2 = Model.Tramos.Count > 1 ? (int?)Model.Tramos[1].VueloId : null, pasajeros = Model.Cantidad },
         new { @class = "btn btn-outline-secondary" })

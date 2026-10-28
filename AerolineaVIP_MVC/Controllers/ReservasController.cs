@@ -40,7 +40,7 @@ namespace AerolineaVIP_MVC.Controllers
         public string Telefono { get; set; }
     }
 
-    // Todo lo que necesita la pantalla 9
+    // Todo lo que necesitan las pantallas 9 y 10
     public class DatosReservaVista
     {
         public List<TramoSeleccion> Tramos { get; set; }
@@ -55,8 +55,22 @@ namespace AerolineaVIP_MVC.Controllers
         }
     }
 
-    // CONTROLADOR DE RESERVAS DEL CLIENTE (pantallas 8, 9 y 10).
-    // Flujo: SeleccionAsiento -> DatosPasajeros -> Confirmar -> Confirmacion.
+    // Una fila de la pantalla "Mis reservas"
+    public class FilaReserva
+    {
+        public int ReservaId { get; set; }
+        public string Codigo { get; set; }
+        public DateTime? FechaViaje { get; set; }
+        public string Ruta { get; set; }
+        public int Pasajeros { get; set; }
+        public string EstadoReserva { get; set; }
+        public string EstadoCompra { get; set; }
+        public DateTime? Vence { get; set; }
+        public bool PuedePagar { get; set; }
+    }
+
+    // CONTROLADOR DE RESERVAS DEL CLIENTE (pantallas 8, 9, 10, 13 y 14).
+    // Flujo: SeleccionAsiento -> DatosPasajeros -> Resumen -> Confirmar -> (Compras/Pagar o Compras/Confirmacion).
     // Sus vistas están en Views/Reservas.
     // Los datos vienen de la base AerolineaVIP (cadena AerolineaVIPEntities).
     // El usuario que reserva se toma de la sesión de Identity (User.Identity.GetUserId()).
@@ -69,14 +83,18 @@ namespace AerolineaVIP_MVC.Controllers
         // Mismo supuesto que en VuelosController (DP-10 pendiente de aprobación)
         private const int MinutosConexion = 30;
 
-        // SUPUESTO: tiempo que tiene el cliente para pagar antes de que expire la reserva
+        // SUPUESTO (DP-07 pendiente de aprobación): tiempo para pagar antes de que expire la reserva
         private const int MinutosExpiracion = 15;
 
-        // ---------- PANTALLA 8: SELECCIÓN DE ASIENTOS (GET) ----------
+        private const int ReservasPorPagina = 10;
+
+        // ---------- PANTALLA 8: SELECCIÓN DE ASIENTOS ----------
         public ActionResult SeleccionAsiento(int? id, int? tramo2, int? pasajeros)
         {
             try
             {
+                AyudaReservas.LiberarVencidas();   // libera asientos de reservas vencidas
+
                 int cantidad = pasajeros ?? 1;
                 if (id == null || cantidad < 1 || cantidad > 7)
                 {
@@ -136,10 +154,45 @@ namespace AerolineaVIP_MVC.Controllers
             }
         }
 
-        // ---------- CONFIRMAR RESERVA (POST desde la pantalla 9) ----------
+        // ---------- PANTALLA 10: RESUMEN DE LA RESERVA (POST desde la pantalla 9) ----------
+        // Valida todo y muestra el resumen con la casilla de condiciones. Todavía NO guarda nada.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Confirmar(int[] vuelos, int cantidad, List<PasajeroForm> pasajerosForm, FormCollection form)
+        public ActionResult Resumen(int[] vuelos, int cantidad, List<PasajeroForm> pasajerosForm, FormCollection form)
+        {
+            try
+            {
+                string error;
+                var vista = Preparar(vuelos, cantidad, form, pasajerosForm, out error);
+                if (error != null)
+                {
+                    TempData["Error"] = error;
+                    return VolverASeleccion(vuelos, cantidad);
+                }
+
+                var errores = ValidarPasajeros(vista);
+                if (errores.Count > 0)
+                {
+                    ViewBag.Errores = errores;
+                    CargarTipos();
+                    return View("DatosPasajeros", vista);
+                }
+
+                return View(vista);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo continuar: " + Mensaje(ex);
+                return VolverASeleccion(vuelos, cantidad);
+            }
+        }
+
+        // ---------- CONFIRMAR RESERVA (POST desde la pantalla 10) ----------
+        // accion = "reservar" (solo reserva) o "pagar" (reserva y va a pagar)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Confirmar(int[] vuelos, int cantidad, List<PasajeroForm> pasajerosForm,
+                                      FormCollection form, string accion, bool? acepta)
         {
             DatosReservaVista vista = null;
             try
@@ -162,7 +215,14 @@ namespace AerolineaVIP_MVC.Controllers
                     return View("DatosPasajeros", vista);
                 }
 
-                // 3) Se guarda todo en una sola transacción: o se guarda todo o no se guarda nada
+                // 3) El cliente debe aceptar las condiciones
+                if (acepta != true)
+                {
+                    ViewBag.Errores = new List<string> { "Debe aceptar las condiciones de la reserva." };
+                    return View("Resumen", vista);
+                }
+
+                // 4) Se guarda todo en una sola transacción: o se guarda todo o no se guarda nada
                 int reservaId;
                 using (var tx = db.Database.BeginTransaction())
                 {
@@ -229,7 +289,11 @@ namespace AerolineaVIP_MVC.Controllers
                     reservaId = reserva.ReservaId;
                 }
 
-                return RedirectToAction("Confirmacion", new { id = reservaId });
+                // 5) "Confirmar y pagar" va al pago; "Confirmar reserva" va a la confirmación
+                if (accion == "pagar")
+                    return RedirectToAction("Pagar", "Compras", new { id = reservaId });
+
+                return RedirectToAction("Confirmacion", "Compras", new { id = reservaId });
             }
             catch (Exception ex)
             {
@@ -237,52 +301,147 @@ namespace AerolineaVIP_MVC.Controllers
                 if (vista != null && vista.Tramos.Count > 0)
                 {
                     ViewBag.Errores = new List<string> { "No se pudo guardar la reserva: " + Mensaje(ex) };
-                    CargarTipos();
-                    return View("DatosPasajeros", vista);
+                    return View("Resumen", vista);
                 }
                 TempData["Error"] = "No se pudo guardar la reserva: " + Mensaje(ex);
                 return RedirectToAction("Buscar", "Vuelos");
             }
         }
 
-        // ---------- PANTALLA 10: CONFIRMACIÓN DE LA RESERVA ----------
-        public ActionResult Confirmacion(int? id)
+        // ---------- PANTALLA 13: MIS RESERVAS ----------
+        // Filtros: fecha de viaje desde/hasta y estado. Siempre se filtra por el usuario con sesión.
+        public ActionResult MisReservas(DateTime? desde, DateTime? hasta, string estado, int? pagina)
         {
             try
             {
+                AyudaReservas.LiberarVencidas();
+                string usuario = User.Identity.GetUserId();
+
+                // Validación del rango (el servidor repite la validación del cliente)
+                bool rangoValido = !(desde != null && hasta != null && hasta.Value.Date < desde.Value.Date);
+                if (!rangoValido)
+                    ViewBag.ErrorFechas = "La fecha «Hasta» no puede ser anterior a «Desde».";
+
+                // 1) Reservas del usuario (nunca de otro), con filtro por estado
+                var consulta = db.Reserva.Where(r => r.UsuarioId == usuario);
+                if (!string.IsNullOrEmpty(estado))
+                    consulta = consulta.Where(r => r.EstadoReservaCodigo == estado);
+                var lista = consulta.OrderByDescending(r => r.ReservaId).ToList();
+                var ids = lista.Select(r => r.ReservaId).ToList();
+
+                // 2) Datos para armar el texto de cada fila
+                var asignaciones = db.ReservaPasajeroVuelo.Where(a => ids.Contains(a.ReservaId)).ToList();
+                var vuelos = db.Vuelo.ToList().ToDictionary(v => v.VueloId);
+                var frecuencias = db.Frecuencia.ToList().ToDictionary(f => f.FrecuenciaId);
+                var rutas = db.Ruta.ToList().ToDictionary(r => r.RutaId);
+                var codigos = db.Aeropuerto.ToList().ToDictionary(a => a.AeropuertoId, a => a.CodigoIATA);
+                var compras = db.Compra.Where(c => ids.Contains(c.ReservaId)).ToList();
+
+                // 3) Una fila por reserva
+                var filas = new List<FilaReserva>();
+                foreach (var r in lista)
+                {
+                    var vuelosReserva = asignaciones.Where(a => a.ReservaId == r.ReservaId)
+                        .Select(a => a.VueloId).Distinct()
+                        .Select(vid => vuelos[vid])
+                        .OrderBy(v => v.FechaOperacion).ThenBy(v => frecuencias[v.FrecuenciaId].HoraSalida)
+                        .ToList();
+
+                    // Ruta: "UIO → GYE → UIO"
+                    string ruta = "";
+                    if (vuelosReserva.Count > 0)
+                    {
+                        Ruta primera = rutas[frecuencias[vuelosReserva[0].FrecuenciaId].RutaId];
+                        ruta = codigos[primera.AeropuertoOrigenId];
+                        foreach (var v in vuelosReserva)
+                            ruta += " → " + codigos[rutas[frecuencias[v.FrecuenciaId].RutaId].AeropuertoDestinoId];
+                    }
+
+                    Compra compra = compras.Where(c => c.ReservaId == r.ReservaId)
+                                           .OrderByDescending(c => c.CompraId).FirstOrDefault();
+
+                    filas.Add(new FilaReserva
+                    {
+                        ReservaId = r.ReservaId,
+                        Codigo = r.CodigoReserva,
+                        FechaViaje = vuelosReserva.Count > 0 ? (DateTime?)vuelosReserva[0].FechaOperacion : null,
+                        Ruta = ruta,
+                        Pasajeros = asignaciones.Where(a => a.ReservaId == r.ReservaId).Select(a => a.PasajeroId).Distinct().Count(),
+                        EstadoReserva = AyudaReservas.Bonito(r.EstadoReservaCodigo),
+                        EstadoCompra = compra != null ? AyudaReservas.Bonito(compra.EstadoCompraCodigo) : "Sin compra",
+                        Vence = r.FechaExpiracion,
+                        PuedePagar = r.EstadoReservaCodigo == "PENDIENTE"
+                    });
+                }
+
+                // 4) Filtro por fecha de viaje
+                if (rangoValido)
+                {
+                    if (desde != null)
+                        filas = filas.Where(f => f.FechaViaje != null && f.FechaViaje.Value.Date >= desde.Value.Date).ToList();
+                    if (hasta != null)
+                        filas = filas.Where(f => f.FechaViaje != null && f.FechaViaje.Value.Date <= hasta.Value.Date).ToList();
+                }
+
+                // 5) Paginación
+                int totalPaginas = Math.Max(1, (int)Math.Ceiling(filas.Count / (double)ReservasPorPagina));
+                int actual = Math.Min(Math.Max(pagina ?? 1, 1), totalPaginas);
+                var pagina10 = filas.Skip((actual - 1) * ReservasPorPagina).Take(ReservasPorPagina).ToList();
+
+                ViewBag.Pagina = actual;
+                ViewBag.TotalPaginas = totalPaginas;
+                ViewBag.Desde = desde != null ? desde.Value.ToString("yyyy-MM-dd") : "";
+                ViewBag.Hasta = hasta != null ? hasta.Value.ToString("yyyy-MM-dd") : "";
+                ViewBag.Estado = estado ?? "";
+                ViewBag.Estados = new SelectList(db.EstadoReserva.ToList(), "Codigo", "Descripcion", estado);
+
+                return View(pagina10);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "No se pudieron cargar sus reservas: " + Mensaje(ex);
+                ViewBag.Pagina = 1;
+                ViewBag.TotalPaginas = 1;
+                ViewBag.Desde = "";
+                ViewBag.Hasta = "";
+                ViewBag.Estado = "";
+                ViewBag.Estados = new SelectList(new List<string>());
+                return View(new List<FilaReserva>());
+            }
+        }
+
+        // ---------- PANTALLA 14: GESTIÓN Y CANCELACIÓN (GET) ----------
+        public ActionResult Gestionar(int? id)
+        {
+            try
+            {
+                AyudaReservas.LiberarVencidas();
+
                 if (id == null)
                     return RedirectToAction("MisReservas");
 
                 Reserva reserva = db.Reserva.Find(id);
                 if (reserva == null)
                     return HttpNotFound();
-
-                // Un cliente solo ve SUS reservas; el personal administrativo ve todas
-                bool esPersonal = User.IsInRole("Administrador") || User.IsInRole("SuperUsuario");
-                if (reserva.UsuarioId != User.Identity.GetUserId() && !esPersonal)
+                if (!EsTitularOPersonal(reserva))
                     return RedirectToAction("AccesoDenegado", "Home");
 
-                var filas = new List<AsignacionFila>();
-                decimal total = 0;
-                var asignaciones = db.ReservaPasajeroVuelo.Where(a => a.ReservaId == reserva.ReservaId)
-                                                          .OrderBy(a => a.VueloId).ThenBy(a => a.NumeroAsiento).ToList();
-                foreach (var a in asignaciones)
-                {
-                    Pasajero p = db.Pasajero.Find(a.PasajeroId);
-                    filas.Add(new AsignacionFila
-                    {
-                        Pasajero = p != null ? p.Apellidos + " " + p.Nombres : "",
-                        Vuelo = TextoVuelo(a.VueloId),
-                        Asiento = CodigoAsiento(a.VueloId, a.NumeroAsiento),
-                        Importe = a.ImporteTramo,
-                        Estado = a.EstadoAsignacionCodigo
-                    });
-                    if (a.EstadoAsignacionCodigo != "CANCELADA")
-                        total += a.ImporteTramo;
-                }
+                decimal total;
+                var filas = AyudaReservas.Filas(db, reserva.ReservaId, out total);
+                Compra compra = db.Compra.Where(c => c.ReservaId == reserva.ReservaId)
+                                         .OrderByDescending(c => c.CompraId).FirstOrDefault();
 
                 ViewBag.Filas = filas;
                 ViewBag.Total = total;
+                ViewBag.EstadoCompra = compra != null ? AyudaReservas.Bonito(compra.EstadoCompraCodigo) : "Sin compra";
+                ViewBag.CompraPagada = compra != null && compra.EstadoCompraCodigo == "PAGADA";
+                ViewBag.Asientos = string.Join(", ", filas.Where(f => f.Estado == "PENDIENTE" || f.Estado == "CONFIRMADA")
+                                                           .Select(f => f.Asiento).Distinct());
+
+                string motivoNo = MotivoNoCancelar(reserva);
+                ViewBag.PuedeCancelar = motivoNo == null;
+                ViewBag.MotivoNoCancelar = motivoNo;
+
                 return View(reserva);
             }
             catch (Exception ex)
@@ -292,33 +451,87 @@ namespace AerolineaVIP_MVC.Controllers
             }
         }
 
-        // ---------- MIS RESERVAS: lista de las reservas del usuario con sesión ----------
-        public ActionResult MisReservas()
+        // ---------- CANCELAR RESERVA (POST desde la pantalla 14) ----------
+        // Cancela la reserva y libera los asientos (vuelven a verde).
+        // Política de reembolso pendiente (DP-08): NO se modifica la compra pagada ni el pago.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CancelarReserva(int id, string motivo)
         {
             try
             {
-                string usuario = User.Identity.GetUserId();
-                var lista = db.Reserva.Where(r => r.UsuarioId == usuario)
-                                      .OrderByDescending(r => r.ReservaId).ToList();
-                var ids = lista.Select(r => r.ReservaId).ToList();
+                Reserva reserva = db.Reserva.Find(id);
+                if (reserva == null)
+                    return HttpNotFound();
+                if (!EsTitularOPersonal(reserva))
+                    return RedirectToAction("AccesoDenegado", "Home");
 
-                // Cantidad de asientos de cada reserva
-                ViewBag.Asientos = db.ReservaPasajeroVuelo.Where(a => ids.Contains(a.ReservaId))
-                    .GroupBy(a => a.ReservaId)
-                    .Select(g => new { Id = g.Key, N = g.Count() })
-                    .ToList().ToDictionary(x => x.Id, x => x.N);
+                // El motivo es opcional; si se escribe, debe tener entre 10 y 300 caracteres
+                motivo = (motivo ?? "").Trim();
+                if (motivo.Length > 0 && (motivo.Length < 10 || motivo.Length > 300))
+                {
+                    TempData["Error"] = "El motivo debe tener entre 10 y 300 caracteres.";
+                    return RedirectToAction("Gestionar", new { id = id });
+                }
 
-                return View(lista);
+                string razon = MotivoNoCancelar(reserva);
+                if (razon != null)
+                {
+                    TempData["Error"] = razon;
+                    return RedirectToAction("Gestionar", new { id = id });
+                }
+
+                reserva.EstadoReservaCodigo = "CANCELADA";
+
+                var asientos = db.ReservaPasajeroVuelo.Where(a => a.ReservaId == id
+                    && (a.EstadoAsignacionCodigo == "PENDIENTE" || a.EstadoAsignacionCodigo == "CONFIRMADA")).ToList();
+                foreach (var a in asientos)
+                    a.EstadoAsignacionCodigo = "CANCELADA";
+
+                // Una compra que aún no se pagó se anula; una compra pagada no se toca (DP-08)
+                foreach (var c in db.Compra.Where(x => x.ReservaId == id && x.EstadoCompraCodigo == "PENDIENTE").ToList())
+                    c.EstadoCompraCodigo = "ANULADA";
+
+                db.SaveChanges();
+                TempData["Ok"] = "Reserva " + reserva.CodigoReserva + " cancelada. Asientos liberados: " + asientos.Count + ".";
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "No se pudieron cargar sus reservas: " + Mensaje(ex);
-                ViewBag.Asientos = new Dictionary<int, int>();
-                return View(new List<Reserva>());
+                TempData["Error"] = "No se pudo cancelar la reserva: " + Mensaje(ex);
             }
+            return RedirectToAction("Gestionar", new { id = id });
         }
 
         // ---------- Métodos de ayuda ----------
+
+        // El titular de la reserva o el personal administrativo
+        private bool EsTitularOPersonal(Reserva r)
+        {
+            return r.UsuarioId == User.Identity.GetUserId()
+                || User.IsInRole("Administrador") || User.IsInRole("SuperUsuario");
+        }
+
+        // Devuelve el motivo por el que NO se puede cancelar, o null si sí se puede
+        private string MotivoNoCancelar(Reserva r)
+        {
+            if (r.EstadoReservaCodigo != "PENDIENTE" && r.EstadoReservaCodigo != "CONFIRMADA")
+                return "Solo se pueden cancelar reservas pendientes o confirmadas.";
+
+            var activas = db.ReservaPasajeroVuelo.Where(a => a.ReservaId == r.ReservaId
+                && (a.EstadoAsignacionCodigo == "PENDIENTE" || a.EstadoAsignacionCodigo == "CONFIRMADA")).ToList();
+
+            foreach (var a in activas)
+            {
+                if (AyudaReservas.SalidaVuelo(db, a.VueloId) <= DateTime.Now)
+                    return "La reserva incluye vuelos que ya salieron; no se puede cancelar.";
+            }
+
+            var idsAsignacion = activas.Select(a => a.AsignacionId).ToList();
+            if (db.CheckIn.Any(c => idsAsignacion.Contains(c.AsignacionId) && c.EstadoCheckInCodigo == "COMPLETADO"))
+                return "Ya se realizó el check-in de esta reserva; no se puede cancelar.";
+
+            return null;
+        }
 
         // Arma los vuelos de la reserva con su mapa de asientos y valida las reglas de negocio.
         // Si algo no se puede reservar, devuelve el motivo en "error".
@@ -607,38 +820,9 @@ namespace AerolineaVIP_MVC.Controllers
             });
         }
 
-        // Texto de un vuelo: "08/11/2026 09:00 · UIO → GYE"
-        private string TextoVuelo(int vueloId)
-        {
-            Vuelo v = db.Vuelo.Find(vueloId);
-            if (v == null) return "";
-            Frecuencia f = db.Frecuencia.Find(v.FrecuenciaId);
-            Ruta r = db.Ruta.Find(f.RutaId);
-            Aeropuerto o = db.Aeropuerto.Find(r.AeropuertoOrigenId);
-            Aeropuerto d = db.Aeropuerto.Find(r.AeropuertoDestinoId);
-            DateTime salida = v.FechaOperacion.Date + f.HoraSalida;
-            return salida.ToString("dd/MM/yyyy HH:mm") + " · " + o.CodigoIATA + " → " + d.CodigoIATA;
-        }
-
-        // Código del asiento (1D, 2I...) según el modelo de la aeronave del vuelo
-        private string CodigoAsiento(int vueloId, int numero)
-        {
-            Vuelo v = db.Vuelo.Find(vueloId);
-            if (v == null || v.AeronaveId == null) return numero.ToString();
-
-            Aeronave a = db.Aeronave.Find(v.AeronaveId);
-            if (a == null) return numero.ToString();
-
-            Asiento s = db.Asiento.FirstOrDefault(x => x.ModeloAeronaveId == a.ModeloAeronaveId
-                                                    && x.NumeroAsiento == numero);
-            return s != null ? s.Codigo : numero.ToString();
-        }
-
         private string Mensaje(Exception ex)
         {
-            while (ex.InnerException != null)
-                ex = ex.InnerException;
-            return ex.Message;
+            return AyudaReservas.Mensaje(ex);
         }
 
         protected override void Dispose(bool disposing)

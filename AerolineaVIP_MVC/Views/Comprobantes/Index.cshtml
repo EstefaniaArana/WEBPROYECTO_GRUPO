@@ -1,0 +1,93 @@
+﻿@model List<AerolineaVIP_MVC.Controllers.FilaComprobante>
+@{
+    ViewBag.Title = "Comprobantes";
+    string desde = ViewBag.Desde as string;
+    string hasta = ViewBag.Hasta as string;
+    string errorFechas = ViewBag.ErrorFechas as string;
+    bool tieneAlguno = (bool)ViewBag.TieneAlguno;
+}
+
+<h1 class="h2">Comprobantes</h1>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+
+<div class="alert alert-info" role="status">
+    Comprobante académico de una operación simulada. No constituye factura tributaria ni documento autorizado.
+</div>
+
+@* FILTROS: fecha de emisión desde/hasta y tipo *@
+<form method="get" action="@Url.Action("Index", "Comprobantes")" class="row g-3 mb-3" id="formFiltro" novalidate>
+    <div class="col-md-3">
+        <label for="desde" class="form-label">Desde (opcional)</label>
+        <input type="date" id="desde" name="desde" value="@desde" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="hasta" class="form-label">Hasta (opcional)</label>
+        <input type="date" id="hasta" name="hasta" value="@hasta" class="form-control" aria-describedby="err_Fechas" />
+    </div>
+    <div class="col-md-3">
+        <label for="tipo" class="form-label">Tipo (opcional)</label>
+        @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos", new { @class = "form-select", id = "tipo" })
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        @Html.ActionLink("Limpiar", "Index", "Comprobantes", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+    <div class="col-12"><div id="err_Fechas" class="text-danger small" role="alert">@errorFechas</div></div>
+</form>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        @(tieneAlguno ? "No hay comprobantes para los filtros seleccionados." : "Aún no tiene comprobantes.")
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Número</th><th>Tipo</th><th>Fecha</th><th>Reserva</th><th>Importe</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td>@f.Numero</td>
+                        <td>@f.Tipo</td>
+                        <td>@f.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@f.CodigoReserva</td>
+                        <td>@(f.Importe != null ? f.Importe.Value.ToString("N2") + " " + f.Moneda : "—")</td>
+                        <td>@f.Estado</td>
+                        <td>
+                            @Html.ActionLink("Visualizar", "Ver", "Comprobantes", new { id = f.ComprobanteId }, new { @class = "btn btn-sm btn-outline-primary" })
+                            @Html.ActionLink("Descargar PDF", "Descargar", "Comprobantes", new { id = f.ComprobanteId }, new { @class = "btn btn-sm btn-primary" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Validación del cliente: "Hasta" no puede ser anterior a "Desde"
+            $('#formFiltro').on('submit', function (e) {
+                var desde = $('#desde').val(), hasta = $('#hasta').val();
+                if (desde && hasta && hasta < desde) {
+                    e.preventDefault();
+                    $('#err_Fechas').text('La fecha «Hasta» no puede ser anterior a «Desde».');
+                    $('#hasta').addClass('is-invalid').trigger('focus');
+                } else {
+                    $('#err_Fechas').text('');
+                    $('#hasta').removeClass('is-invalid');
+                }
+            });
+        });
+    </script>
+}

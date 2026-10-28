@@ -1,43 +1,124 @@
-﻿
-@model IEnumerable<AerolineaVIP_MVC.Models.Reserva>
+﻿@model List<AerolineaVIP_MVC.Controllers.FilaReserva>
 @{
     ViewBag.Title = "Mis reservas";
-    var asientos = (Dictionary<int, int>)ViewBag.Asientos;
+    int pagina = (int)ViewBag.Pagina;
+    int totalPaginas = (int)ViewBag.TotalPaginas;
+    string desde = ViewBag.Desde as string;
+    string hasta = ViewBag.Hasta as string;
+    string estado = ViewBag.Estado as string;
+    string errorFechas = ViewBag.ErrorFechas as string;
 }
 
-<h2>Mis reservas</h2>
+<h1 class="h2">Mis reservas</h1>
 
 @if (TempData["Error"] != null)
 {<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
 @if (ViewBag.Error != null)
-{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div> }
 
-@if (!Model.Any())
+@* FILTROS: fecha de viaje desde/hasta y estado *@
+<form method="get" action="@Url.Action("MisReservas", "Reservas")" class="row g-3 mb-3" id="formFiltro" novalidate>
+    <div class="col-md-3">
+        <label for="desde" class="form-label">Fecha de viaje desde (opcional)</label>
+        <input type="date" id="desde" name="desde" value="@desde" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="hasta" class="form-label">Hasta (opcional)</label>
+        <input type="date" id="hasta" name="hasta" value="@hasta" class="form-control" aria-describedby="err_Fechas" />
+    </div>
+    <div class="col-md-3">
+        <label for="estado" class="form-label">Estado (opcional)</label>
+        @Html.DropDownList("estado", (SelectList)ViewBag.Estados, "Todos", new { @class = "form-select", id = "estado" })
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        @Html.ActionLink("Limpiar", "MisReservas", "Reservas", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+    <div class="col-12"><div id="err_Fechas" class="text-danger small" role="alert">@errorFechas</div></div>
+</form>
+
+@if (Model.Count == 0)
 {
-    <div class="alert alert-info" role="alert">Todavía no tiene reservas.</div>
-    @Html.ActionLink("Buscar vuelos", "Buscar", "Vuelos", null, new { @class = "btn btn-primary" })
+    <div class="alert alert-info" role="alert">
+        No tiene reservas que coincidan con los filtros.
+        @Html.ActionLink("Buscar vuelos", "Buscar", "Vuelos", null, new { @class = "alert-link" })
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <tr>
-            <th>Código</th>
-            <th>Creada</th>
-            <th>Vence</th>
-            <th>Estado</th>
-            <th>Asientos</th>
-            <th></th>
-        </tr>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.CodigoReserva</td>
-                <td>@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>@(item.FechaExpiracion != null ? item.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "—")</td>
-                <td>@item.EstadoReservaCodigo</td>
-                <td>@(asientos.ContainsKey(item.ReservaId) ? asientos[item.ReservaId] : 0)</td>
-                <td>@Html.ActionLink("Ver detalle", "Confirmacion", new { id = item.ReservaId })</td>
-            </tr>
-        }
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Fecha de viaje</th>
+                    <th>Ruta</th>
+                    <th>Pasajeros</th>
+                    <th>Reserva</th>
+                    <th>Compra</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td>@f.Codigo</td>
+                        <td>@(f.FechaViaje != null ? f.FechaViaje.Value.ToString("dd/MM/yyyy") : "—")</td>
+                        <td>@f.Ruta</td>
+                        <td>@f.Pasajeros</td>
+                        <td>
+                            @f.EstadoReserva
+                            @if (f.PuedePagar && f.Vence != null)
+                            {
+                                <br /><small class="text-muted">Vence @f.Vence.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                            }
+                        </td>
+                        <td>@f.EstadoCompra</td>
+                        <td>
+                            @Html.ActionLink("Ver detalle", "Gestionar", "Reservas", new { id = f.ReservaId }, new { @class = "btn btn-sm btn-outline-primary" })
+                            @if (f.PuedePagar)
+                            {
+                                @Html.ActionLink("Pagar", "Pagar", "Compras", new { id = f.ReservaId }, new { @class = "btn btn-sm btn-success" })
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    if (totalPaginas > 1)
+    {
+        <nav aria-label="Paginación de reservas">
+            <ul class="pagination">
+                <li class="page-item @(pagina <= 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("MisReservas", "Reservas", new { desde = desde, hasta = hasta, estado = estado, pagina = pagina - 1 })">Anterior</a>
+                </li>
+                <li class="page-item disabled"><span class="page-link">Página @pagina de @totalPaginas</span></li>
+                <li class="page-item @(pagina >= totalPaginas ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("MisReservas", "Reservas", new { desde = desde, hasta = hasta, estado = estado, pagina = pagina + 1 })">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    }
+}
+
+@section Scripts {
+    <script>
+                $(function () {
+                    // Validación del cliente: "Hasta" no puede ser anterior a "Desde"
+                    $('#formFiltro').on('submit', function (e) {
+                        var desde = $('#desde').val(), hasta = $('#hasta').val();
+                        if (desde && hasta && hasta < desde) {
+                            e.preventDefault();
+                            $('#err_Fechas').text('La fecha «Hasta» no puede ser anterior a «Desde».');
+                            $('#hasta').addClass('is-invalid').trigger('focus');
+                        } else {
+                            $('#err_Fechas').text('');
+                            $('#hasta').removeClass('is-invalid');
+                        }
+                    });
+                });
+    </script>
 }

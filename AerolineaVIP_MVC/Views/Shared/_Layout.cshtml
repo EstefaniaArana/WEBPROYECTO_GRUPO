@@ -75,6 +75,8 @@
                     <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })</li>
                     <li class="nav-item">@Html.ActionLink("Vuelos", "Buscar", "Vuelos", null, new { @class = "nav-link" })</li>
                     <li class="nav-item">@Html.ActionLink("Mis reservas", "MisReservas", "Reservas", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Check-in", "Index", "CheckIn", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Comprobantes", "Index", "Comprobantes", null, new { @class = "nav-link" })</li>
                     @* Los links del cliente (Mis reservas, Check-in, Comprobantes)
         se agregan aquí cuando se construyan esas pantallas *@
 
@@ -98,6 +100,8 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li>@Html.ActionLink("Pasajeros", "Index", "Pasajero", null, new { @class = "dropdown-item" })</li>
                                 <li>@Html.ActionLink("Reservas", "Index", "Reserva", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Usuarios", "Index", "Usuarios", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Reportes", "Index", "Reportes", null, new { @class = "dropdown-item" })</li>
                             </ul>
                         </li>
                     }

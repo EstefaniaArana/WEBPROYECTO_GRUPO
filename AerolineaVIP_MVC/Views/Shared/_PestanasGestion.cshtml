@@ -1,0 +1,8 @@
+﻿@model string
+
+@* Pestañas de la pantalla 20: Usuarios · Pasajeros · Reservas *@
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">@Html.ActionLink("Usuarios", "Index", "Usuarios", null, new { @class = "nav-link" + (Model == "usuarios" ? " active" : "") })</li>
+    <li class="nav-item">@Html.ActionLink("Pasajeros", "Index", "Pasajero", null, new { @class = "nav-link" + (Model == "pasajeros" ? " active" : "") })</li>
+    <li class="nav-item">@Html.ActionLink("Reservas", "Index", "Reserva", null, new { @class = "nav-link" + (Model == "reservas" ? " active" : "") })</li>
+</ul>

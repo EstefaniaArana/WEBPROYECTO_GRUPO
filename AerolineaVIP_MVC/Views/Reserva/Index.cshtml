@@ -5,7 +5,7 @@
     var asientos = (Dictionary<int, int>)ViewBag.Asientos;
     var compras = (Dictionary<int, string>)ViewBag.Compras;
 }
-
+@Html.Partial("_PestanasGestion", "reservas")
 <h2>Reservas</h2>
 
 @if (TempData["Error"] != null)

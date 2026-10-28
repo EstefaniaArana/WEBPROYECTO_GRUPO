@@ -1,51 +1,107 @@
 ﻿@model AerolineaVIP_MVC.Models.RegisterViewModel
 @{
-    ViewBag.Title = "Registro";
+    ViewBag.Title = "Crear cuenta";
+    bool esSuper = (bool)ViewBag.EsSuper;
 }
 
-<h2>@ViewBag.Title</h2>
+<h1 class="h2">Crear cuenta</h1>
 
-@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger" role="alert">@Html.ValidationSummary(true)</div>
+}
+
+@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { id = "formRegistro" }))
 {
     @Html.AntiForgeryToken()
-    <h4>Crear una cuenta nueva</h4>
-    <hr />
-    @Html.ValidationSummary("", new { @class = "text-danger" })
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">@Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })</div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">@Html.TextBoxFor(m => m.Email, new { @class = "form-control" })</div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">@Html.PasswordFor(m => m.Password, new { @class = "form-control" })</div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })</div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.Rol, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.DropDownListFor(m => m.Rol, (SelectList)ViewBag.Roles, "-- Seleccione --", new { @class = "form-control" })
+    <div class="row g-3">
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Nombres, "Nombres *", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Nombres, new { @class = "form-control", maxlength = 100, placeholder = "Ej.: María José" })
+            @Html.ValidationMessageFor(m => m.Nombres, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Apellidos, "Apellidos *", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Apellidos, new { @class = "form-control", maxlength = 100, placeholder = "Ej.: Pérez Torres" })
+            @Html.ValidationMessageFor(m => m.Apellidos, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.UserName, "Nombre de usuario *", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", maxlength = 50, autocomplete = "username", aria_describedby = "ayudaUsuario" })
+            <div id="ayudaUsuario" class="form-text">De 4 a 50 caracteres: letras, números, punto o guion bajo.</div>
+            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Email, "Correo electrónico *", new { @class = "form-label" })
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", maxlength = 256, type = "email", placeholder = "correo@ejemplo.com" })
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Password, "Contraseña *", new { @class = "form-label" })
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control", autocomplete = "new-password", aria_describedby = "ayudaClave" })
+            <div id="ayudaClave" class="form-text">
+                Requisitos: mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.
+            </div>
+            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.ConfirmPassword, "Confirmar contraseña *", new { @class = "form-label" })
+            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })
+            @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })
+        </div>
+        <div class="col-md-6">
+            @Html.LabelFor(m => m.Rol, "Rol *", new { @class = "form-label" })
+            @if (esSuper)
+            {
+                @Html.DropDownListFor(m => m.Rol, (SelectList)ViewBag.Roles, new { @class = "form-select" })
+                <div class="form-text">Como SuperUsuario puede crear cuentas con otros roles.</div>
+            }
+            else
+            {
+                <select class="form-select" disabled aria-describedby="ayudaRol"><option>Cliente</option></select>
+                @Html.HiddenFor(m => m.Rol)
+                <div id="ayudaRol" class="form-text">Las cuentas públicas se crean siempre con el rol Cliente.</div>
+            }
+            @Html.ValidationMessageFor(m => m.Rol, "", new { @class = "text-danger small" })
         </div>
     </div>
 
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" class="btn btn-primary" value="Registrar" />
-        </div>
+    <h2 class="h6 mt-4">Aviso de privacidad y condiciones</h2>
+    <div class="border rounded p-2 mb-2" style="max-height:110px; overflow:auto;" tabindex="0" aria-label="Texto del aviso de privacidad">
+        Proyecto académico. Los datos que escribe se usan solo para crear su cuenta y gestionar sus reservas
+        dentro de esta aplicación. Los pagos son simulados y no se realizan cobros reales. No comparta contraseñas reales de otros servicios.
     </div>
+    <div class="form-check mb-1">
+        <input class="form-check-input" type="checkbox" id="acepta" name="acepta" value="true" />
+        <label class="form-check-label" for="acepta">Acepto el aviso de privacidad y las condiciones *</label>
+    </div>
+    <div id="err_acepta" class="text-danger small mb-3" role="alert"></div>
+
+    <button type="submit" class="btn btn-primary" id="btnCrear">Crear cuenta</button>
+    @Html.ActionLink("Cancelar", "Index", "Home", null, new { @class = "btn btn-outline-secondary" })
 }
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(function () {
+            $('#formRegistro').on('submit', function (e) {
+                // La casilla de aceptación no la valida DataAnnotations: se revisa aquí (y también en el servidor)
+                if (!$('#acepta').is(':checked')) {
+                    e.preventDefault();
+                    $('#err_acepta').text('Debe aceptar el aviso de privacidad y las condiciones.');
+                    $('#acepta').addClass('is-invalid').attr('aria-invalid', 'true').trigger('focus');
+                    return;
+                }
+                $('#err_acepta').text('');
+                $('#acepta').removeClass('is-invalid').removeAttr('aria-invalid');
+
+                if ($(this).valid()) {
+                    $('#btnCrear').prop('disabled', true).text('Creando cuenta…');   // evita envíos repetidos
+                }
+            });
+            $(window).on('pageshow', function () { $('#btnCrear').prop('disabled', false).text('Crear cuenta'); });
+        });
+    </script>
 }

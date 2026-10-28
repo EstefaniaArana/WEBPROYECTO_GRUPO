@@ -1,0 +1,147 @@
+﻿@model List<AerolineaVIP_MVC.Controllers.FilaCheckIn>
+@{
+    ViewBag.Title = "Check-in";
+    bool buscado = (bool)ViewBag.Buscado;
+    string codigo = ViewBag.Codigo as string;
+    string documento = ViewBag.Documento as string;
+    string errorCodigo = ViewBag.ErrorCodigo as string;
+    string errorDocumento = ViewBag.ErrorDocumento as string;
+    string mensaje = ViewBag.Mensaje as string;
+}
+
+<h1 class="h2">Check-in</h1>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
+@if (TempData["Ok"] != null)
+{<div class="alert alert-success" role="status">@TempData["Ok"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+<div class="alert alert-info" role="status">@ViewBag.Ventana</div>
+
+<h2 class="h5">1. Localizar reserva</h2>
+
+@* El formulario envía los datos por GET: buscar no modifica nada *@
+<form method="get" action="@Url.Action("Index", "CheckIn")" id="formBuscar" novalidate class="row g-3 mb-4">
+    <div class="col-md-5">
+        <label for="codigo" class="form-label">Código de reserva *</label>
+        <input type="text" id="codigo" name="codigo" value="@codigo" class="form-control" placeholder="RV00000000"
+               maxlength="10" autocomplete="off" aria-describedby="err_codigo" />
+        <div id="err_codigo" class="text-danger small" role="alert">@errorCodigo</div>
+    </div>
+    <div class="col-md-5">
+        <label for="documento" class="form-label">Número de documento del pasajero *</label>
+        <input type="text" id="documento" name="documento" value="@documento" class="form-control"
+               maxlength="20" autocomplete="off" aria-describedby="err_documento" />
+        <div id="err_documento" class="text-danger small" role="alert">@errorDocumento</div>
+    </div>
+    <div class="col-md-2 d-flex align-items-start pt-md-4">
+        <button type="submit" class="btn btn-primary w-100 mt-md-1">Iniciar check-in</button>
+    </div>
+</form>
+
+@if (mensaje != null)
+{
+    <div class="alert alert-warning" role="alert">@mensaje</div>
+}
+
+@if (buscado)
+{
+    <h2 class="h5">2. Pasajeros de la reserva @ViewBag.CodigoReserva</h2>
+
+    using (Html.BeginForm("Confirmar", "CheckIn", FormMethod.Post, new { id = "formConfirmar" }))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="codigo" value="@codigo" />
+        <input type="hidden" name="documento" value="@documento" />
+
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr><th>Check-in</th><th>Pasajero</th><th>Vuelo</th><th>Asiento</th><th>Elegibilidad</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (f.Realizado)
+                                {
+                                    <span class="badge text-bg-success">Realizado</span>
+                                }
+                                else
+                                {
+                                    <input type="checkbox" class="form-check-input chk" name="asignaciones" value="@f.AsignacionId"
+                                           id="chk_@f.AsignacionId" disabled="@(!f.PuedeMarcar)"
+                                           aria-label="Check-in de @f.Pasajero, asiento @f.Asiento" />
+                                }
+                            </td>
+                            <td>@f.Pasajero</td>
+                            <td>@f.Vuelo</td>
+                            <td>@f.Asiento</td>
+                            <td>@f.Elegibilidad</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div id="err_seleccion" class="text-danger small mb-2" role="alert"></div>
+        <button type="submit" class="btn btn-success" id="btnConfirmar" disabled>Confirmar check-in</button>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "CheckIn", new { codigo = codigo, documento = documento })">Consultar estado</a>
+    }
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Paso 1: validación del cliente (el servidor las repite)
+            $('#formBuscar').on('submit', function (e) {
+                var errores = 0;
+                var codigo = $.trim($('#codigo').val()).toUpperCase();
+                var documento = $.trim($('#documento').val());
+
+                if (!/^RV\d{8}$/.test(codigo)) {
+                    $('#err_codigo').text('El código debe tener el formato RV00000000.');
+                    $('#codigo').addClass('is-invalid').attr('aria-invalid', 'true');
+                    errores++;
+                } else {
+                    $('#err_codigo').text('');
+                    $('#codigo').removeClass('is-invalid').removeAttr('aria-invalid');
+                }
+
+                if (documento.length < 5 || documento.length > 20) {
+                    $('#err_documento').text('El documento debe tener entre 5 y 20 caracteres.');
+                    $('#documento').addClass('is-invalid').attr('aria-invalid', 'true');
+                    errores++;
+                } else {
+                    $('#err_documento').text('');
+                    $('#documento').removeClass('is-invalid').removeAttr('aria-invalid');
+                }
+
+                if (errores > 0) {
+                    e.preventDefault();
+                    $('.is-invalid').first().trigger('focus');
+                }
+            });
+
+            // Paso 2: "Confirmar" se habilita cuando hay al menos un pasajero marcado
+            function actualizar() {
+                var marcados = $('.chk:checked').length;
+                $('#btnConfirmar').prop('disabled', marcados === 0);
+                $('#err_seleccion').text(marcados === 0 ? 'Seleccione al menos un pasajero elegible.' : '');
+            }
+            $('.chk').on('change', actualizar);
+            if ($('.chk:not(:disabled)').length > 0) { actualizar(); }
+
+            // Evita envíos repetidos
+            $('#formConfirmar').on('submit', function () {
+                $('#btnConfirmar').prop('disabled', true).text('Registrando check-in…');
+            });
+            $(window).on('pageshow', function () {
+                $('#btnConfirmar').text('Confirmar check-in');
+                if ($('.chk').length > 0) { actualizar(); }
+            });
+        });
+    </script>
+}

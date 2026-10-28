@@ -1,0 +1,86 @@
+﻿
+@model List<AerolineaVIP_MVC.Controllers.FilaUsuario>
+@{
+    ViewBag.Title = "Usuarios";
+    bool puede = (bool)ViewBag.PuedeAsignar;
+}
+
+@Html.Partial("_PestanasGestion", "usuarios")
+
+<h1 class="h2">Usuarios</h1>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
+@if (TempData["Ok"] != null)
+{<div class="alert alert-success" role="status">@TempData["Ok"]</div>}
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+
+@if (puede)
+{
+    <p>@Html.ActionLink("Crear usuario", "Register", "Account", null, new { @class = "btn btn-primary" })</p>
+}
+
+@* FILTROS: texto y rol *@
+<form method="get" action="@Url.Action("Index", "Usuarios")" class="row g-3 mb-3">
+    <div class="col-md-5">
+        <label for="buscar" class="form-label">Buscar (opcional)</label>
+        <input type="text" id="buscar" name="buscar" value="@ViewBag.Buscar" class="form-control" placeholder="Usuario o correo" />
+    </div>
+    <div class="col-md-4">
+        <label for="rol" class="form-label">Rol (opcional)</label>
+        @Html.DropDownList("rol", (SelectList)ViewBag.Roles, "Todos", new { @class = "form-select", id = "rol" })
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">Consultar</button>
+        @Html.ActionLink("Limpiar", "Index", "Usuarios", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+</form>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">No se encontraron registros.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr></thead>
+            <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td>@f.UserName @(f.EsPropio ? "(usted)" : "")</td>
+                        <td>@f.Nombre</td>
+                        <td>@f.Correo</td>
+                        <td>@f.Rol</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                @Html.ActionLink("Revisar historial", "Historial", "Usuarios", new { id = f.Id }, new { @class = "btn btn-sm btn-outline-primary" })
+
+                                @if (puede && !f.EsPropio && f.Rol != "SuperUsuario")
+                                {
+                                    using (Html.BeginForm("AsignarRol", "Usuarios", new { id = f.Id }, FormMethod.Post, new { @class = "d-flex gap-1" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <select name="rol" class="form-select form-select-sm" aria-label="Rol de @f.UserName">
+                                            <option value="Cliente" selected="@(f.Rol == "Cliente")">Cliente</option>
+                                            <option value="Administrador" selected="@(f.Rol == "Administrador")">Administrador</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-primary">Asignar rol</button>
+                                    }
+                                    using (Html.BeginForm("Eliminar", "Usuarios", new { id = f.Id }, FormMethod.Post,
+                                           new { onsubmit = "return confirm('¿Eliminar al usuario " + f.UserName + "?');" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

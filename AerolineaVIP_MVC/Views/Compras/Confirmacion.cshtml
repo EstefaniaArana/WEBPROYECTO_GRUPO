@@ -1,0 +1,74 @@
+﻿
+@model AerolineaVIP_MVC.Models.Reserva
+@{
+    ViewBag.Title = "Confirmación";
+    var filas = (List<AerolineaVIP_MVC.Controllers.AsignacionFila>)ViewBag.Filas;
+    decimal total = (decimal)ViewBag.Total;
+    string tipo = ViewBag.Tipo as string;
+    bool pagada = (bool)ViewBag.Pagada;
+    bool puedePagar = (bool)ViewBag.PuedePagar;
+    bool puedeReintentar = (bool)ViewBag.PuedeReintentar;
+}
+
+<h1 class="h2">Confirmación de la operación</h1>
+
+@if (TempData["Error"] != null)
+{<div class="alert alert-danger" role="alert">@TempData["Error"]</div>}
+
+<div class="alert alert-@tipo" role="status">@ViewBag.Mensaje</div>
+
+@* Tres estados separados, siempre con texto además del color *@
+<p>
+    <span class="badge text-bg-primary">Reserva: @ViewBag.EstadoReserva</span>
+    <span class="badge text-bg-secondary">Compra: @ViewBag.EstadoCompra</span>
+    <span class="badge text-bg-dark">Pago: @ViewBag.EstadoPago</span>
+</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Código de reserva</dt>
+    <dd class="col-sm-9">@Model.CodigoReserva</dd>
+    <dt class="col-sm-3">Creada</dt>
+    <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+    <dt class="col-sm-3">Total</dt>
+    <dd class="col-sm-9">USD @total.ToString("N2")</dd>
+    @if (!string.IsNullOrEmpty(ViewBag.Metodo as string))
+    {
+        <dt class="col-sm-3">Método</dt>
+        <dd class="col-sm-9">@ViewBag.Metodo</dd>
+    }
+</dl>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead><tr><th>Pasajero</th><th>Vuelo</th><th>Asiento</th><th>Importe (USD)</th><th>Estado</th></tr></thead>
+        <tbody>
+            @foreach (var f in filas)
+            {
+                <tr>
+                    <td>@f.Pasajero</td>
+                    <td>@f.Vuelo</td>
+                    <td>@f.Asiento</td>
+                    <td>@f.Importe.ToString("N2")</td>
+                    <td>@AerolineaVIP_MVC.Controllers.AyudaReservas.Bonito(f.Estado)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex flex-wrap gap-2">
+    @Html.ActionLink("Ver reserva", "Gestionar", "Reservas", new { id = Model.ReservaId }, new { @class = "btn btn-primary" })
+    @if (pagada)
+    {
+        @Html.ActionLink("Consultar comprobante", "Index", "Comprobantes", null, new { @class = "btn btn-outline-primary" })
+    }
+    @if (puedeReintentar)
+    {
+        @Html.ActionLink("Reintentar pago", "Pagar", "Compras", new { id = Model.ReservaId }, new { @class = "btn btn-warning" })
+    }
+    else if (puedePagar)
+    {
+        @Html.ActionLink("Pagar ahora", "Pagar", "Compras", new { id = Model.ReservaId }, new { @class = "btn btn-success" })
+    }
+    @Html.ActionLink("Volver al inicio", "Index", "Home", null, new { @class = "btn btn-outline-secondary" })
+</div>

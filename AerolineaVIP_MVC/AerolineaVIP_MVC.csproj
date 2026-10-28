@@ -53,6 +53,12 @@
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PdfSharp, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.Charting.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -174,15 +180,21 @@
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AeronaveController.cs" />
     <Compile Include="Controllers\AeropuertoController.cs" />
+    <Compile Include="Controllers\AyudaReservas.cs" />
+    <Compile Include="Controllers\CheckInController.cs" />
+    <Compile Include="Controllers\ComprasController.cs" />
+    <Compile Include="Controllers\ComprobantesController.cs" />
     <Compile Include="Controllers\FrecuenciaController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ItinerarioController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\ModeloAeronaveController.cs" />
     <Compile Include="Controllers\PasajeroController.cs" />
+    <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Controllers\ReservaController.cs" />
     <Compile Include="Controllers\ReservasController.cs" />
     <Compile Include="Controllers\RutaController.cs" />
+    <Compile Include="Controllers\UsuariosController.cs" />
     <Compile Include="Controllers\VueloController.cs" />
     <Compile Include="Controllers\VuelosController.cs" />
     <Compile Include="Global.asax.cs">
@@ -459,8 +471,18 @@
     <Content Include="Views\Vuelos\_MapaAsientos.cshtml" />
     <Content Include="Views\Reservas\SeleccionAsiento.cshtml" />
     <Content Include="Views\Reservas\DatosPasajeros.cshtml" />
-    <Content Include="Views\Reservas\Confirmacion.cshtml" />
     <Content Include="Views\Reservas\MisReservas.cshtml" />
+    <Content Include="Views\Reservas\Resumen.cshtml" />
+    <Content Include="Views\Reservas\Gestionar.cshtml" />
+    <Content Include="Views\Compras\Pagar.cshtml" />
+    <Content Include="Views\Compras\Confirmacion.cshtml" />
+    <Content Include="Views\CheckIn\Index.cshtml" />
+    <Content Include="Views\Comprobantes\Index.cshtml" />
+    <Content Include="Views\Comprobantes\Ver.cshtml" />
+    <Content Include="Views\Usuarios\Index.cshtml" />
+    <Content Include="Views\Usuarios\Historial.cshtml" />
+    <Content Include="Views\Shared\_PestanasGestion.cshtml" />
+    <Content Include="Views\Reportes\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

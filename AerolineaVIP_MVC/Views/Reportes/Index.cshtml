@@ -1,0 +1,130 @@
+﻿@model AerolineaVIP_MVC.Controllers.ReporteVista
+@{
+    ViewBag.Title = "Consultas y reportes";
+    string consulta = ViewBag.Consulta as string;
+    string estadoActual = ViewBag.Estado as string;
+}
+
+<h1 class="h2">Consultas y reportes</h1>
+
+@if (ViewBag.Error != null)
+{<div class="alert alert-danger" role="alert">@ViewBag.Error</div>}
+<div id="errores" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+@* FILTROS: se envían por GET *@
+<form method="get" action="@Url.Action("Index", "Reportes")" id="formReporte" novalidate class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="consulta" class="form-label">Consulta *</label>
+        <select id="consulta" name="consulta" class="form-select">
+            <option value="">Seleccione una consulta</option>
+            <option value="ocupacion" selected="@(consulta == "ocupacion")">Ocupación por vuelo</option>
+            <option value="reservas" selected="@(consulta == "reservas")">Reservas por estado</option>
+            <option value="compras" selected="@(consulta == "compras")">Compras y pagos simulados</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label for="desde" class="form-label">Fecha desde *</label>
+        <input type="date" id="desde" name="desde" value="@ViewBag.Desde" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label for="hasta" class="form-label">Fecha hasta *</label>
+        <input type="date" id="hasta" name="hasta" value="@ViewBag.Hasta" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label for="estado" class="form-label">Estado (opcional)</label>
+        <select id="estado" name="estado" class="form-select"><option value="">Todos</option></select>
+    </div>
+    <div class="col-md-4">
+        <label for="rutaId" class="form-label">Ruta (opcional)</label>
+        @Html.DropDownList("rutaId", (SelectList)ViewBag.Rutas, "Todas", new { @class = "form-select", id = "rutaId" })
+    </div>
+    <div class="col-md-4">
+        <label for="aeronaveId" class="form-label">Aeronave (opcional)</label>
+        @Html.DropDownList("aeronaveId", (SelectList)ViewBag.Aeronaves, "Todas", new { @class = "form-select", id = "aeronaveId" })
+    </div>
+    <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary" id="btnConsultar">Consultar</button>
+        @Html.ActionLink("Limpiar", "Index", "Reportes", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+    <div class="col-12 form-text">Ruta y aeronave se aplican solo a la consulta de ocupación por vuelo. El rango máximo es de 366 días.</div>
+</form>
+
+@if (Model != null)
+{
+    <h2 class="h4">@Model.Titulo</h2>
+    <div class="alert alert-info" role="status">
+        Datos con corte al @Model.Corte.ToString("dd/MM/yyyy HH:mm").
+        @if (consulta == "ocupacion")
+        {<text> Disponibles = Capacidad − Ocupados (asientos reservados u ocupados).</text>}
+        <br /><strong>@Model.Resumen</strong>
+    </div>
+
+    if (Model.Filas.Count == 0)
+    {
+        <div class="alert alert-warning" role="alert">No hay resultados para los filtros seleccionados.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead><tr>@foreach (var c in Model.Columnas)
+                {<th>@c</th>}</tr></thead>
+                <tbody>
+                    @foreach (var fila in Model.Filas)
+                    {
+                        <tr>@foreach (var celda in fila)
+                        {<td>@celda</td>}</tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <a class="btn btn-outline-primary" href="@Request.RawUrl">Actualizar resultados</a>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Estados de cada consulta (vienen del servidor)
+            var estados = @Html.Raw(Json.Encode(ViewBag.EstadosPorConsulta));
+            var estadoActual = '@estadoActual';
+
+            // Cambia la lista "Estado" y habilita Ruta/Aeronave solo en la ocupación
+            function actualizarFiltros() {
+                var c = $('#consulta').val();
+                var $estado = $('#estado');
+                $estado.empty().append('<option value="">Todos</option>');
+                if (estados[c]) {
+                    $.each(estados[c], function (i, e) {
+                        $estado.append($('<option>').val(e.codigo).text(e.texto));
+                    });
+                    $estado.val(estadoActual);
+                }
+                var ocupacion = (c === 'ocupacion');
+                $('#rutaId, #aeronaveId').prop('disabled', !ocupacion);
+            }
+            $('#consulta').on('change', function () { estadoActual = ''; actualizarFiltros(); });
+            actualizarFiltros();
+
+            // Validaciones del cliente (el servidor las repite)
+            $('#formReporte').on('submit', function (e) {
+                var errores = [];
+                var desde = $('#desde').val(), hasta = $('#hasta').val();
+
+                if (!$('#consulta').val()) { errores.push('Seleccione una consulta.'); }
+                if (!desde || !hasta) { errores.push('Indique la fecha «Desde» y la fecha «Hasta».'); }
+                else if (hasta < desde) { errores.push('La fecha «Hasta» no puede ser anterior a «Desde».'); }
+                else if ((new Date(hasta) - new Date(desde)) / 86400000 > 365) { errores.push('El rango no puede superar 366 días.'); }
+
+                if (errores.length > 0) {
+                    e.preventDefault();
+                    $('#errores').html(errores.join('<br />')).show();
+                    return;
+                }
+                $('#errores').hide();
+                $('#btnConsultar').prop('disabled', true).text('Consultando…');
+            });
+            $(window).on('pageshow', function () { $('#btnConsultar').prop('disabled', false).text('Consultar'); });
+        });
+    </script>
+}

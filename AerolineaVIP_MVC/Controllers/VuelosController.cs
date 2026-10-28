@@ -119,6 +119,7 @@ namespace AerolineaVIP_MVC.Controllers
         {
             try
             {
+                AyudaReservas.LiberarVencidas();
                 Aeropuerto ap = db.Aeropuerto.FirstOrDefault(a => a.CodigoIATA == origen && a.Activo);
                 if (ap == null)
                     return Json(new List<object>(), JsonRequestBehavior.AllowGet);
@@ -214,7 +215,7 @@ namespace AerolineaVIP_MVC.Controllers
             {
                 if (id == null)
                     return RedirectToAction("Buscar");
-
+                AyudaReservas.LiberarVencidas();
                 Vuelo v = db.Vuelo.Find(id);
                 if (v == null || v.EstadoVueloCodigo == "CANCELADO")
                 {

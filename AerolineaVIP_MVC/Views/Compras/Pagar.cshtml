@@ -1,0 +1,277 @@
+﻿@model AerolineaVIP_MVC.Controllers.PagoForm
+@{
+    ViewBag.Title = "Pago de la reserva";
+    var reserva = (AerolineaVIP_MVC.Models.Reserva)ViewBag.Reserva;
+    var filas = (List<AerolineaVIP_MVC.Controllers.AsignacionFila>)ViewBag.Filas;
+    decimal total = (decimal)ViewBag.Total;
+    var marcas = (List<AerolineaVIP_MVC.Controllers.MarcaVista>)ViewBag.Marcas;
+    var metodos = (List<AerolineaVIP_MVC.Models.MetodoPago>)ViewBag.Metodos;
+    var errores = ViewBag.Errores as List<string>;
+}
+
+<h1 class="h2">Pago de la reserva @reserva.CodigoReserva</h1>
+
+<div class="alert alert-info" role="status">Simulación académica: no se realizan cobros reales.</div>
+
+@if (errores != null && errores.Count > 0)
+{
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">@foreach (var e in errores)
+        {<li>@e</li>}</ul>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        @using (Html.BeginForm("Pagar", "Compras", new { id = reserva.ReservaId }, FormMethod.Post,
+                new { id = "formPago", novalidate = "novalidate", data_total = total.ToString("N2") }))
+        {
+            @Html.AntiForgeryToken()
+
+            <fieldset class="mb-3">
+                <legend class="h5">Método de pago *</legend>
+                @foreach (var m in metodos)
+                {
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="MetodoPagoCodigo" id="metodo_@m.Codigo" value="@m.Codigo"
+                               checked="@(Model.MetodoPagoCodigo == m.Codigo)" />
+                        <label class="form-check-label" for="metodo_@m.Codigo">@m.Nombre</label>
+                    </div>
+                }
+            </fieldset>
+
+            <fieldset class="mb-3" aria-describedby="err_Marca">
+                <legend class="h5">Marca de la tarjeta *</legend>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var m in marcas)
+                    {
+                        bool hayLogo = System.IO.File.Exists(Server.MapPath(m.RutaLogo));
+                        <input type="radio" class="btn-check" name="MarcaTarjetaCodigo" id="marca_@m.Codigo" value="@m.Codigo"
+                               data-nombre="@m.Nombre" data-num="@m.LongitudNumero" data-cod="@m.LongitudCodigo"
+                               checked="@(Model.MarcaTarjetaCodigo == m.Codigo)" />
+                        <label class="btn btn-outline-primary" for="marca_@m.Codigo">
+                            @if (hayLogo)
+                            {<img src="@Url.Content(m.RutaLogo)" alt="" height="20" />}
+                            @m.Nombre
+                        </label>
+                    }
+                </div>
+                <div id="err_Marca" class="text-danger small" role="alert"></div>
+            </fieldset>
+
+            <div class="mb-3">
+                <label for="NumeroTarjeta" class="form-label">Número de tarjeta *</label>
+                <input type="text" class="form-control" id="NumeroTarjeta" name="NumeroTarjeta" inputmode="numeric"
+                       autocomplete="off" placeholder="0000 0000 0000 0000" aria-describedby="ayuda_Numero err_NumeroTarjeta" />
+                <div id="ayuda_Numero" class="form-text">Solo números. La cantidad de dígitos depende de la marca.</div>
+                <div id="err_NumeroTarjeta" class="text-danger small" role="alert"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="Titular" class="form-label">Nombre del titular *</label>
+                <input type="text" class="form-control" id="Titular" name="Titular" maxlength="100" autocomplete="off"
+                       placeholder="Como aparece en la tarjeta" value="@Model.Titular" aria-describedby="err_Titular" />
+                <div id="err_Titular" class="text-danger small" role="alert"></div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label for="Vencimiento" class="form-label">Vencimiento *</label>
+                    <input type="text" class="form-control" id="Vencimiento" name="Vencimiento" inputmode="numeric"
+                           autocomplete="off" placeholder="MM/AA" maxlength="5" aria-describedby="err_Vencimiento" />
+                    <div id="err_Vencimiento" class="text-danger small" role="alert"></div>
+                </div>
+                <div class="col-sm-6">
+                    <label for="CodigoSeguridad" class="form-label">Código de seguridad *</label>
+                    <input type="password" class="form-control" id="CodigoSeguridad" name="CodigoSeguridad" inputmode="numeric"
+                           autocomplete="off" placeholder="•••" maxlength="4" aria-describedby="ayuda_Codigo err_CodigoSeguridad" />
+                    <div id="ayuda_Codigo" class="form-text">3 dígitos (4 en American Express).</div>
+                    <div id="err_CodigoSeguridad" class="text-danger small" role="alert"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnPagar">Pagar</button>
+            @Html.ActionLink("Volver", "MisReservas", "Reservas", null, new { @class = "btn btn-outline-secondary" })
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><strong>Resumen de compra</strong></div>
+            <div class="card-body">
+                <dl class="row mb-2">
+                    <dt class="col-5">Reserva</dt>
+                    <dd class="col-7">@reserva.CodigoReserva</dd>
+                    <dt class="col-5">Estado</dt>
+                    <dd class="col-7">Pendiente de pago</dd>
+                    <dt class="col-5">Vence</dt>
+                    <dd class="col-7">@(reserva.FechaExpiracion != null ? reserva.FechaExpiracion.Value.ToString("dd/MM/yyyy HH:mm") : "—")</dd>
+                </dl>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Pasajero</th><th>Vuelo</th><th>Asiento</th><th>USD</th></tr></thead>
+                        <tbody>
+                            @foreach (var f in filas)
+                            {
+                                <tr><td>@f.Pasajero</td><td>@f.Vuelo</td><td>@f.Asiento</td><td>@f.Importe.ToString("N2")</td></tr>
+                            }
+                        </tbody>
+                        <tfoot><tr><th colspan="3">Total</th><th>@total.ToString("N2")</th></tr></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal de confirmación: ¿Está seguro de que desea realizar este pago? *@
+<div class="modal fade" id="modalConfirmarPago" tabindex="-1" aria-labelledby="tituloModalPago" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="tituloModalPago">¿Está seguro de que desea realizar este pago?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Monto total</dt>
+                    <dd class="col-7" id="mMonto"></dd>
+                    <dt class="col-5">Moneda</dt>
+                    <dd class="col-7">USD</dd>
+                    <dt class="col-5">Reserva</dt>
+                    <dd class="col-7">@reserva.CodigoReserva</dd>
+                    <dt class="col-5">Método</dt>
+                    <dd class="col-7" id="mMetodo"></dd>
+                    <dt class="col-5">Tarjeta</dt>
+                    <dd class="col-7" id="mTarjeta"></dd>
+                    <dt class="col-5">Estado</dt>
+                    <dd class="col-7">Pago simulado sin procesar</dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="btnModalCancelar">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnModalPagar">Pagar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            var $form = $('#formPago');
+            var modal = new bootstrap.Modal(document.getElementById('modalConfirmarPago'));
+            var campos = ['Marca', 'NumeroTarjeta', 'Titular', 'Vencimiento', 'CodigoSeguridad'];
+
+            function soloDigitos(texto) { return texto.replace(/\D/g, ''); }
+
+            // Marca elegida: devuelve su nombre y las longitudes que le corresponden
+            function marcaElegida() {
+                var $m = $('input[name="MarcaTarjetaCodigo"]:checked');
+                if ($m.length === 0) { return null; }
+                return { nombre: $m.data('nombre'), num: parseInt($m.data('num'), 10), cod: parseInt($m.data('cod'), 10) };
+            }
+
+            // Número de tarjeta: solo dígitos, en grupos de 4, con el máximo de la marca
+            function formatearNumero() {
+                var m = marcaElegida();
+                var d = soloDigitos($('#NumeroTarjeta').val()).substring(0, m ? m.num : 19);
+                $('#NumeroTarjeta').val(d.replace(/(.{4})/g, '$1 ').replace(/\s+$/, ''));
+            }
+            $('#NumeroTarjeta').on('input', formatearNumero);
+
+            // Vencimiento: solo dígitos, con "/" automática (MM/AA)
+            $('#Vencimiento').on('input', function () {
+                var d = soloDigitos(this.value).substring(0, 4);
+                this.value = d.length > 2 ? d.substring(0, 2) + '/' + d.substring(2) : d;
+            });
+
+            // Código de seguridad: solo dígitos
+            $('#CodigoSeguridad').on('input', function () {
+                var m = marcaElegida();
+                this.value = soloDigitos(this.value).substring(0, m ? m.cod : 4);
+            });
+
+            // Al cambiar la marca se ajustan las longitudes
+            $('input[name="MarcaTarjetaCodigo"]').on('change', function () {
+                formatearNumero();
+                var m = marcaElegida();
+                $('#CodigoSeguridad').attr('maxlength', m.cod);
+            });
+
+            // Validaciones del cliente (el servidor las repite)
+            function validar() {
+                var errores = {};
+                var m = marcaElegida();
+                if (!m) { errores.Marca = 'Seleccione la marca de la tarjeta.'; }
+
+                var numero = soloDigitos($('#NumeroTarjeta').val());
+                if (numero.length === 0) { errores.NumeroTarjeta = 'Ingrese el número de tarjeta.'; }
+                else if (m && numero.length !== m.num) { errores.NumeroTarjeta = 'El número debe tener ' + m.num + ' dígitos para ' + m.nombre + '.'; }
+
+                var titular = $.trim($('#Titular').val());
+                if (!/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{2,100}$/.test(titular)) {
+                    errores.Titular = 'Ingrese el nombre del titular (solo letras, de 2 a 100 caracteres).';
+                }
+
+                var venc = $('#Vencimiento').val();
+                if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(venc)) {
+                    errores.Vencimiento = 'Use el formato MM/AA con un mes entre 01 y 12.';
+                } else {
+                    var mes = parseInt(venc.substring(0, 2), 10);
+                    var anio = 2000 + parseInt(venc.substring(3), 10);
+                    if (new Date(anio, mes, 0, 23, 59, 59) < new Date()) { errores.Vencimiento = 'La tarjeta está vencida.'; }
+                }
+
+                var codigo = soloDigitos($('#CodigoSeguridad').val());
+                if (codigo.length === 0) { errores.CodigoSeguridad = 'Ingrese el código de seguridad.'; }
+                else if (m && codigo.length !== m.cod) { errores.CodigoSeguridad = 'El código debe tener ' + m.cod + ' dígitos.'; }
+
+                return errores;
+            }
+
+            // Muestra los errores junto a cada campo; devuelve true si no hay ninguno
+            function mostrar(errores) {
+                var primero = null;
+                $.each(campos, function (i, c) {
+                    var $control = (c === 'Marca') ? $('input[name="MarcaTarjetaCodigo"]').first() : $('#' + c);
+                    if (errores[c]) {
+                        $('#err_' + c).text(errores[c]);
+                        $control.addClass('is-invalid').attr('aria-invalid', 'true');
+                        if (!primero) { primero = $control; }
+                    } else {
+                        $('#err_' + c).text('');
+                        $control.removeClass('is-invalid').removeAttr('aria-invalid');
+                    }
+                });
+                if (primero) { primero.trigger('focus'); }
+                return primero === null;
+            }
+
+            // Pagar: valida y abre el modal. El envío real lo hace el botón del modal.
+            $form.on('submit', function (e) {
+                e.preventDefault();
+                if (!mostrar(validar())) { return; }
+
+                var m = marcaElegida();
+                var ultimos = soloDigitos($('#NumeroTarjeta').val()).slice(-4);
+                $('#mMonto').text($form.attr('data-total'));
+                $('#mMetodo').text($.trim($('input[name="MetodoPagoCodigo"]:checked').next('label').text()));
+                $('#mTarjeta').text(m.nombre + ' **** ' + ultimos);
+                modal.show();
+            });
+
+            $('#btnModalPagar').on('click', function () {
+                $('#btnModalPagar, #btnModalCancelar').prop('disabled', true);   // evita pagos repetidos
+                $('#btnModalPagar').text('Procesando pago simulado…');
+                $form.get(0).submit();
+            });
+
+            // Si el usuario vuelve con el botón "atrás", se reactivan los botones
+            $(window).on('pageshow', function () {
+                $('#btnModalPagar, #btnModalCancelar').prop('disabled', false);
+                $('#btnModalPagar').text('Pagar');
+            });
+        });
+    </script>
+}

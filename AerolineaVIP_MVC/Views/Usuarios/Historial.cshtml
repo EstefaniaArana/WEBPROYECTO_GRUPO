@@ -1,0 +1,34 @@
+﻿@model List<AerolineaVIP_MVC.Controllers.FilaHistorial>
+@{
+    ViewBag.Title = "Historial";
+}
+
+<h1 class="h2">Historial de @ViewBag.UserName</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">Este usuario aún no tiene reservas.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead><tr><th>Reserva</th><th>Creada</th><th>Estado</th><th>Compra</th><th>Asientos</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td>@f.Codigo</td>
+                        <td>@f.Creada.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@f.Estado</td>
+                        <td>@f.Compra</td>
+                        <td>@f.Asientos</td>
+                        <td>@Html.ActionLink("Ver detalle", "Details", "Reserva", new { id = f.ReservaId }, new { @class = "btn btn-sm btn-outline-primary" })</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@Html.ActionLink("Volver a usuarios", "Index", "Usuarios", null, new { @class = "btn btn-outline-secondary" })
